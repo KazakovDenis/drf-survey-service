@@ -1,7 +1,7 @@
 from django.db import transaction
 from rest_framework import serializers
 
-from survey.models import Scheme, Question, Answer
+from survey.models import *
 
 
 class SurveySerializerMixin:
@@ -29,7 +29,7 @@ class SurveyQuestionSerializer(serializers.ModelSerializer):
         fields = ['text', 'answer_type']
 
 
-class SurveyListSerializer(serializers.HyperlinkedModelSerializer, SurveySerializerMixin):
+class SchemeListSerializer(serializers.HyperlinkedModelSerializer, SurveySerializerMixin):
     """Сериализатор списка моделей опроса"""
     questions = SurveyQuestionSerializer(many=True)
 
@@ -45,7 +45,7 @@ class SurveyListSerializer(serializers.HyperlinkedModelSerializer, SurveySeriali
         fields = ['id', 'url', 'name', 'description', 'date_from', 'date_to', 'questions']
 
 
-class SurveySerializer(SurveyListSerializer):
+class SchemeSerializer(SchemeListSerializer):
     """Сериализатор модели опроса"""
 
     def update(self, instance, validated_data):
@@ -55,8 +55,12 @@ class SurveySerializer(SurveyListSerializer):
         return instance
 
 
-class SurveyAnswerSerializer(serializers.ModelSerializer):
-    """Сериализатор модели ответа"""
+class SurveyListSerializer(serializers.ModelSerializer):
+    """Сериализатор списка результатов опросов"""
     class Meta:
-        model = Answer
-        fields = ['content']
+        model = Survey
+        fields = ['id', 'scheme.name', 'scheme.description', 'scheme.date_from', 'scheme.date_to']
+
+
+class SurveySerializer(SurveyListSerializer):
+    """Сериализатор модели результата опроса"""

@@ -22,7 +22,7 @@ def api_root(request, format=None):
 
 class SchemeAPIViewMixin:
     queryset = Scheme.objects.all()
-    serializer_class = SurveySerializer
+    serializer_class = SchemeSerializer
     permission_classes = [
         permissions.IsAdminUser
     ]
@@ -36,25 +36,42 @@ class SchemeDetailAPIView(SchemeAPIViewMixin, generics.RetrieveUpdateDestroyAPIV
     """API endpoint для просмотра и редактирования конкретного опроса"""
 
 
-class SurveyListAPIView(APIView):
-    """API endpoint списка опросов для участника"""
-
-    def get(self, request, pk):
-        survey = get_object_or_404(Scheme, pk=pk)
-        serializer = SurveySerializer(survey, context={'request': request})
-        return Response({'survey': serializer.data})
-
-    def post(self, request, pk):
-        survey = get_object_or_404(Scheme, pk=pk)
-        serializer = SurveySerializer(survey, data=request.data)
-        if not serializer.is_valid():
-            return Response({'serializer': serializer.data})
-        serializer.save()
-        return redirect('survey-list')
+# todo: read only
+class SurveyAPIViewMixin:
+    queryset = Survey.objects.all()
+    serializer_class = SurveySerializer
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly
+    ]
 
 
-class SurveyDetailAPIView(APIView):
-    """API endpoint формы опроса для участника"""
+class SurveyListAPIView(SurveyAPIViewMixin, generics.ListAPIView):
+    """API endpoint для просмотра списка опросов участником"""
+
+
+class SurveyDetailAPIView(SurveyAPIViewMixin, generics.RetrieveUpdateDestroyAPIView):
+    """API endpoint для заполнения опроса участником"""
+
+
+# class SurveyListAPIView(APIView):
+#     """API endpoint списка опросов для участника"""
+#
+#     def get(self, request, pk):
+#         survey = get_object_or_404(Scheme, pk=pk)
+#         serializer = SurveySerializer(survey, context={'request': request})
+#         return Response({'survey': serializer.data})
+#
+#     def post(self, request, pk):
+#         survey = get_object_or_404(Scheme, pk=pk)
+#         serializer = SurveySerializer(survey, data=request.data)
+#         if not serializer.is_valid():
+#             return Response({'serializer': serializer.data})
+#         serializer.save()
+#         return redirect('survey-list')
+#
+#
+# class SurveyDetailAPIView(APIView):
+#     """API endpoint формы опроса для участника"""
 
 
 class ParticipantAPIViewMixin:

@@ -71,12 +71,6 @@ class Question(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False, db_index=True)
     text = models.CharField(_('текст вопроса'), max_length=255)
     answer_type = models.CharField(_('тип ответа'), choices=ANSWER_TYPES, default='TEXT', max_length=127)
-    survey = models.ForeignKey(
-        Scheme,
-        verbose_name=_('опрос'),
-        related_name='questions',
-        on_delete=models.CASCADE,
-    )
 
     class Meta:
         verbose_name = _('вопрос')

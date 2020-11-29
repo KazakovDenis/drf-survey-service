@@ -4,6 +4,26 @@ from rest_framework import serializers
 from survey.models import *
 
 
+class QuestionSerializer(serializers.ModelSerializer):
+    """Сериализатор модели вопроса"""
+    class Meta:
+        model = Question
+        fields = ['text', 'answer_type']
+
+
+class SchemeQuestionSerializer(serializers.ModelSerializer):
+    """Сериализатор модели связи схемы и вопроса"""
+    question = QuestionSerializer()
+
+    def to_representation(self, iterable):
+        ret = super().to_representation(iterable)
+        return ret['question']
+
+    class Meta:
+        model = SchemeQuestion
+        fields = ['question']
+
+
 class SurveySerializerMixin:
 
     question_model = Question
@@ -22,22 +42,6 @@ class SurveySerializerMixin:
             self.add_questions(instance, questions_data)
 
 
-class QuestionSerializer(serializers.ModelSerializer):
-    """Сериализатор модели вопроса"""
-    class Meta:
-        model = Question
-        fields = ['text', 'answer_type']
-
-
-class SchemeQuestionSerializer(serializers.ModelSerializer):
-    """Сериализатор модели связи схемы и вопроса"""
-    question = QuestionSerializer()
-
-    class Meta:
-        model = SchemeQuestion
-        fields = ['question']
-
-
 class SchemeListSerializer(serializers.HyperlinkedModelSerializer, SurveySerializerMixin):
     """Сериализатор списка моделей опроса"""
     scheme_question = SchemeQuestionSerializer(many=True)
@@ -48,6 +52,11 @@ class SchemeListSerializer(serializers.HyperlinkedModelSerializer, SurveySeriali
         instance = self.Meta.model.objects.create(**validated_data)
         self.add_questions(instance, questions_data)
         return instance
+
+    def to_representation(self, iterable):
+        ret = super().to_representation(iterable)
+        ret['questions'] = ret.pop('scheme_question')
+        return ret
 
     class Meta:
         model = Scheme
@@ -68,7 +77,7 @@ class SurveyListSerializer(serializers.ModelSerializer):
     """Сериализатор списка результатов опросов"""
     class Meta:
         model = Survey
-        fields = ['id', 'scheme.name', 'scheme.description', 'scheme.date_from', 'scheme.date_to']
+        fields = ['id', 'scheme']
 
 
 class SurveySerializer(SurveyListSerializer):

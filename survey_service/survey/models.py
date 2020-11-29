@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date
 from uuid import uuid4
 
 from django.db import models
@@ -10,14 +10,14 @@ class Survey(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False, db_index=True)
     name = models.CharField(_('название'), max_length=255)
     description = models.TextField(_('описание'), blank=True)
-    date_from = models.DateField(_('дата начала'), default=datetime.utcnow, editable=False)
+    date_from = models.DateField(_('дата начала'), default=date.today, editable=False)
     date_to = models.DateField(_('дата окончания'))
 
     class Meta:
         verbose_name = _('опрос')
         verbose_name_plural = _('опросы')
         unique_together = ('name', 'date_from')
-        ordering = ['date_from']
+        ordering = ['-date_from']
 
     def __str__(self):
         return self.name

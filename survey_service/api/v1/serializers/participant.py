@@ -1,7 +1,7 @@
 from django.db import transaction
 from rest_framework import serializers
 
-from survey.models import Survey, SurveyQuestion
+from survey.models import Survey, SurveyQuestion, SurveyAnswer
 
 
 class SurveySerializerMixin:
@@ -53,3 +53,10 @@ class SurveySerializer(SurveyListSerializer):
         self.update_questions(instance, questions_data)
         instance = super().update(instance, validated_data)
         return instance
+
+
+class SurveyAnswerSerializer(serializers.ModelSerializer):
+    """Сериализатор модели ответа"""
+    class Meta:
+        model = SurveyAnswer
+        fields = ['content']

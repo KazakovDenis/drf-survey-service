@@ -5,13 +5,13 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 
-class Survey(models.Model):
+class Scheme(models.Model):
     """Опрос"""
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False, db_index=True)
     name = models.CharField(_('название'), max_length=255)
     description = models.TextField(_('описание'), blank=True)
     date_from = models.DateField(_('дата начала'), default=date.today, editable=False)
-    date_to = models.DateField(_('дата окончания'))
+    date_to = models.DateField(_('дата окончания'), default=date.today)
 
     class Meta:
         verbose_name = _('опрос')
@@ -23,7 +23,7 @@ class Survey(models.Model):
         return self.name
 
 
-class SurveyQuestion(models.Model):
+class Question(models.Model):
     """Вопрос из опроса"""
     ANSWER_TYPES = (
         ('TEXT', _('ответ текстом')),
@@ -35,7 +35,7 @@ class SurveyQuestion(models.Model):
     text = models.CharField(_('текст вопроса'), max_length=255)
     answer_type = models.CharField(_('тип ответа'), choices=ANSWER_TYPES, default='TEXT', max_length=127)
     survey = models.ForeignKey(
-        Survey,
+        Scheme,
         verbose_name=_('опрос'),
         related_name='questions',
         on_delete=models.CASCADE,
@@ -50,7 +50,7 @@ class SurveyQuestion(models.Model):
         return self.text
 
 
-class SurveyParticipant(models.Model):
+class Participant(models.Model):
     """Участник опроса"""
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False, db_index=True)
     full_name = models.TextField(_('полное имя'))
@@ -60,17 +60,17 @@ class SurveyParticipant(models.Model):
         verbose_name_plural = _('участники опроса')
 
 
-class SurveyAnswer(models.Model):
+class Answer(models.Model):
     """Ответ на вопрос"""
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False, db_index=True)
     participant = models.ForeignKey(
-        SurveyParticipant,
+        Participant,
         verbose_name=_('участник опроса'),
         related_name='answers',
         on_delete=models.CASCADE,
     )
     question = models.ForeignKey(
-        SurveyQuestion,
+        Question,
         verbose_name=_('вопрос'),
         related_name='answers',
         on_delete=models.CASCADE,

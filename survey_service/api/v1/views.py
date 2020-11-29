@@ -59,9 +59,19 @@ class SurveyDetailAPIView(APIView):
     """API endpoint формы опроса для участника"""
 
 
-class ParticipantListAPIView(APIView):
+class ParticipantListAPIView(generics.ListAPIView):
     """API endpoint списка участников опроса"""
+    queryset = Participant.objects.all()
+    serializer_class = ParticipantListSerializer
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly
+    ]
 
 
-class ParticipantDetailAPIView(APIView):
+class ParticipantDetailAPIView(generics.RetrieveUpdateAPIView):
     """API endpoint информации об участнике опроса"""
+    queryset = Participant.objects.all()
+    serializer_class = ParticipantListSerializer
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly
+    ]

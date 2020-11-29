@@ -10,5 +10,5 @@ urlpatterns = [
     path('surveys/', views.SurveyListAPIView.as_view(), name='survey-list'),
     path('surveys/<uuid:pk>', views.SurveyDetailAPIView.as_view(), name='survey-detail'),
     path('participants/', views.ParticipantListAPIView.as_view(), name='participant-list'),
-    path('participants/<int:pk>', views.ParticipantDetailAPIView.as_view(), name='participant-detail'),
+    path('participants/<uuid:pk>', views.ParticipantDetailAPIView.as_view(), name='participant-detail'),
 ]

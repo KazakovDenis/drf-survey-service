@@ -84,12 +84,12 @@ class SurveyListSerializer(serializers.HyperlinkedModelSerializer, SurveySeriali
 
     def to_representation(self, iterable):
         ret = super().to_representation(iterable)
-        ret['url'] = 1    # todo
+        ret['url'] = ret['url'] + '/take'
         return ret
 
     class Meta:
         model = Scheme
-        fields = ['id', 'url', 'name', 'description', 'date_from', 'date_to']
+        fields = ['url', 'name', 'description', 'date_from', 'date_to']
 
 
 class SurveySerializer(SurveyListSerializer):
@@ -97,4 +97,4 @@ class SurveySerializer(SurveyListSerializer):
 
     class Meta:
         model = Survey
-        fields = ['id', 'url', 'name', 'description', 'date_from', 'date_to']
+        fields = ['id', 'url', 'scheme', 'participant']

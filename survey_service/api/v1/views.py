@@ -1,3 +1,4 @@
+from django.shortcuts import redirect
 from rest_framework import permissions, generics
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -44,6 +45,15 @@ class SurveyListAPIView(SurveyAPIViewMixin, generics.ListAPIView):
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly
     ]
+
+
+@api_view(['GET'])
+def scheme_take(request, *, pk, **kwargs):
+    scheme = Scheme.objects.get(pk=pk)
+    # todo: participant id
+    participant = Participant.objects.get(pk=1)
+    survey = Survey.objects.create(scheme=scheme, participant=participant)
+    return redirect('survey-detail', pk=survey.id)
 
 
 class SurveyDetailAPIView(SurveyAPIViewMixin, generics.RetrieveUpdateDestroyAPIView):

@@ -52,7 +52,6 @@ class Question(models.Model):
 
 class Participant(models.Model):
     """Участник опроса"""
-    id = models.UUIDField(primary_key=True, default=uuid4, editable=False, db_index=True)
     full_name = models.TextField(_('полное имя'))
 
     class Meta:

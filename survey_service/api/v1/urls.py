@@ -4,7 +4,11 @@ from . import views
 
 
 urlpatterns = [
-    path('', views.SurveyListAPIView.as_view(), name='scheme-list'),
-    path('<uuid:pk>/', views.SurveyResultAPIView.as_view(), name='take-survey'),
-    path('<uuid:pk>/edit', views.SurveyDetailAPIView.as_view(), name='scheme-detail'),
+    path('', views.api_root),
+    path('schemes/', views.SchemeListAPIView.as_view(), name='scheme-list'),
+    path('schemes/<uuid:pk>', views.SchemeDetailAPIView.as_view(), name='scheme-detail'),
+    path('surveys/', views.SurveyListAPIView.as_view(), name='survey-list'),
+    path('surveys/<uuid:pk>', views.SurveyDetailAPIView.as_view(), name='survey-detail'),
+    path('participants/', views.ParticipantListAPIView.as_view(), name='participant-list'),
+    path('participants/<int:pk>', views.ParticipantDetailAPIView.as_view(), name='participant-detail'),
 ]

@@ -35,7 +35,7 @@ class SchemeDetailAPIView(SchemeAPIViewMixin, generics.RetrieveUpdateDestroyAPIV
 
 
 class SurveyAPIViewMixin:
-    queryset = Survey.objects.all()
+    queryset = Scheme.objects.all()
 
 
 class SurveyListAPIView(SurveyAPIViewMixin, generics.ListAPIView):

@@ -1,10 +1,7 @@
-from django.shortcuts import redirect
 from rest_framework import permissions, generics
 from rest_framework.decorators import api_view
-from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
-from rest_framework.views import APIView
 
 from .serializers import *
 
@@ -22,7 +19,6 @@ def api_root(request, format=None):
 
 class SchemeAPIViewMixin:
     queryset = Scheme.objects.all()
-    serializer_class = SchemeSerializer
     permission_classes = [
         permissions.IsAdminUser
     ]
@@ -30,29 +26,32 @@ class SchemeAPIViewMixin:
 
 class SchemeListAPIView(SchemeAPIViewMixin, generics.ListCreateAPIView):
     """API endpoint для просмотра и редактирования списка опросов"""
+    serializer_class = SchemeListSerializer
 
 
 class SchemeDetailAPIView(SchemeAPIViewMixin, generics.RetrieveUpdateDestroyAPIView):
     """API endpoint для просмотра и редактирования конкретного опроса"""
+    serializer_class = SchemeSerializer
 
 
-# todo: read only
 class SurveyAPIViewMixin:
     queryset = Survey.objects.all()
-    serializer_class = SurveySerializer
+
+
+class SurveyListAPIView(SurveyAPIViewMixin, generics.ListAPIView):
+    """API endpoint для просмотра списка опросов участником"""
+    serializer_class = SurveyListSerializer
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly
     ]
 
 
-class SurveyListAPIView(SurveyAPIViewMixin, generics.ListAPIView):
-    """API endpoint для просмотра списка опросов участником"""
-
-
 class SurveyDetailAPIView(SurveyAPIViewMixin, generics.RetrieveUpdateDestroyAPIView):
     """API endpoint для заполнения опроса участником"""
+    serializer_class = SurveySerializer
 
 
+# todo
 # class SurveyListAPIView(APIView):
 #     """API endpoint списка опросов для участника"""
 #
@@ -68,10 +67,6 @@ class SurveyDetailAPIView(SurveyAPIViewMixin, generics.RetrieveUpdateDestroyAPIV
 #             return Response({'serializer': serializer.data})
 #         serializer.save()
 #         return redirect('survey-list')
-#
-#
-# class SurveyDetailAPIView(APIView):
-#     """API endpoint формы опроса для участника"""
 
 
 class ParticipantAPIViewMixin:

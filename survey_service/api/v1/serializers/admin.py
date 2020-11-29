@@ -28,6 +28,13 @@ class SurveySerializerMixin:
 
     question_model = Question
 
+    def create(self, validated_data):
+        """Создать опрос"""
+        questions_data = validated_data.pop('questions')
+        instance = self.Meta.model.objects.create(**validated_data)
+        self.add_questions(instance, questions_data)
+        return instance
+
     def add_questions(self, instance, questions_data):
         """Добавить вопросы к опросу"""
         self.question_model.objects.bulk_create(
@@ -41,36 +48,35 @@ class SurveySerializerMixin:
             survey_questions.delete()
             self.add_questions(instance, questions_data)
 
-
-class SchemeListSerializer(serializers.HyperlinkedModelSerializer, SurveySerializerMixin):
-    """Сериализатор списка моделей опроса"""
-    scheme_question = SchemeQuestionSerializer(many=True)
-
-    def create(self, validated_data):
-        """Создать опрос"""
-        questions_data = validated_data.pop('questions')
-        instance = self.Meta.model.objects.create(**validated_data)
-        self.add_questions(instance, questions_data)
-        return instance
-
-    def to_representation(self, iterable):
-        ret = super().to_representation(iterable)
-        ret['questions'] = ret.pop('scheme_question')
-        return ret
-
     class Meta:
         model = Scheme
         fields = ['id', 'url', 'name', 'description', 'date_from', 'date_to', 'scheme_question']
 
 
-class SchemeSerializer(SchemeListSerializer):
+class SchemeListSerializer(serializers.HyperlinkedModelSerializer, SurveySerializerMixin):
+    """Сериализатор списка моделей опроса"""
+    scheme_question = SchemeQuestionSerializer(many=True)
+
+    def to_representation(self, iterable):
+        ret = super().to_representation(iterable)
+        ret.pop('scheme_question')
+        return ret
+
+
+class SchemeSerializer(serializers.HyperlinkedModelSerializer, SurveySerializerMixin):
     """Сериализатор модели опроса"""
+    scheme_question = SchemeQuestionSerializer(many=True)
 
     def update(self, instance, validated_data):
         questions_data = validated_data.pop('questions')
         self.update_questions(instance, questions_data)
         instance = super().update(instance, validated_data)
         return instance
+
+    def to_representation(self, iterable):
+        ret = super().to_representation(iterable)
+        ret['questions'] = ret.pop('scheme_question')
+        return ret
 
 
 class SurveyListSerializer(serializers.ModelSerializer):

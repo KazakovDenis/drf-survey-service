@@ -4,7 +4,7 @@ from rest_framework import serializers
 from survey.models import Survey, SurveyQuestion
 
 
-class SurveyMixin:
+class SurveySerializerMixin:
 
     question_model = SurveyQuestion
 
@@ -29,23 +29,27 @@ class SurveyQuestionSerializer(serializers.ModelSerializer):
         fields = ['text', 'answer_type']
 
 
-class SurveyListSerializer(serializers.HyperlinkedModelSerializer):
+class SurveyListSerializer(serializers.HyperlinkedModelSerializer, SurveySerializerMixin):
     """Сериализатор списка моделей опроса"""
+    questions = SurveyQuestionSerializer(many=True)
+
+    def create(self, validated_data):
+        """Создать опрос"""
+        questions_data = validated_data.pop('questions')
+        instance = self.Meta.model.objects.create(**validated_data)
+        self.add_questions(instance, questions_data)
+        return instance
+
     class Meta:
         model = Survey
-        fields = ['id', 'url', 'name', 'description', 'date_from', 'date_to']
+        fields = ['id', 'url', 'name', 'description', 'date_from', 'date_to', 'questions']
 
 
-class SurveySerializer(SurveyMixin, SurveyListSerializer):
+class SurveySerializer(SurveyListSerializer):
     """Сериализатор модели опроса"""
-    questions = SurveyQuestionSerializer(many=True)
 
     def update(self, instance, validated_data):
         questions_data = validated_data.pop('questions')
         self.update_questions(instance, questions_data)
         instance = super().update(instance, validated_data)
         return instance
-
-    class Meta:
-        model = Survey
-        fields = ['id', 'url', 'name', 'description', 'date_from', 'date_to', 'questions']

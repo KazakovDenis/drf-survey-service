@@ -20,22 +20,20 @@ def api_root(request, format=None):
     })
 
 
-class SchemeListAPIView(generics.ListCreateAPIView):
-    """API endpoint для просмотра и редактирования списка опросов"""
-    queryset = Scheme.objects.all()
-    serializer_class = SurveyListSerializer
-    permission_classes = [
-        permissions.IsAuthenticatedOrReadOnly
-    ]
-
-
-class SchemeDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
-    """API endpoint для просмотра и редактирования конкретного опроса"""
+class SchemeAPIViewMixin:
     queryset = Scheme.objects.all()
     serializer_class = SurveySerializer
     permission_classes = [
         permissions.IsAdminUser
     ]
+
+
+class SchemeListAPIView(SchemeAPIViewMixin, generics.ListCreateAPIView):
+    """API endpoint для просмотра и редактирования списка опросов"""
+
+
+class SchemeDetailAPIView(SchemeAPIViewMixin, generics.RetrieveUpdateDestroyAPIView):
+    """API endpoint для просмотра и редактирования конкретного опроса"""
 
 
 class SurveyListAPIView(APIView):

@@ -1,14 +1,9 @@
-from django.urls import include, path
+from django.urls import path
 
-from rest_framework import routers
+from . import views
 
-from .views import UserViewSet, SurveyViewSet
-
-
-router = routers.DefaultRouter()
-router.register('users', UserViewSet)
-router.register('surveys', SurveyViewSet)
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path('', views.SurveyListAPIView.as_view(), name='survey-list'),
+    path('<uuid:pk>/', views.SurveyDetailAPIView.as_view(), name='survey-detail'),
 ]

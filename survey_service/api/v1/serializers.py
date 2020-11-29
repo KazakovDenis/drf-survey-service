@@ -1,16 +1,51 @@
-from django.contrib.auth.models import User
+from django.db import transaction
 from rest_framework import serializers
 
-from survey.models import Survey
+from survey.models import Survey, SurveyQuestion
 
 
-class UserSerializer(serializers.HyperlinkedModelSerializer):
+class SurveyMixin:
+
+    question_model = SurveyQuestion
+
+    def add_questions(self, instance, questions_data):
+        """Добавить вопросы к опросу"""
+        self.question_model.objects.bulk_create(
+            [SurveyQuestion(survey=instance, **q) for q in questions_data]
+        )
+
+    def update_questions(self, instance, questions_data):
+        """Обновить вопросы опроса"""
+        with transaction.atomic():
+            survey_questions = self.question_model.objects.filter(survey=instance)
+            survey_questions.delete()
+            self.add_questions(instance, questions_data)
+
+
+class SurveyQuestionSerializer(serializers.ModelSerializer):
+    """Сериализатор модели вопроса"""
     class Meta:
-        model = User
-        fields = ['url', 'username', 'email', 'groups']
+        model = SurveyQuestion
+        fields = ['text', 'answer_type']
 
 
-class SurveySerializer(serializers.HyperlinkedModelSerializer):
+class SurveyListSerializer(serializers.HyperlinkedModelSerializer):
+    """Сериализатор списка моделей опроса"""
     class Meta:
         model = Survey
-        fields = ['url', 'id', 'name', 'description', 'date_from', 'date_to']
+        fields = ['id', 'url', 'name', 'description', 'date_from', 'date_to']
+
+
+class SurveySerializer(SurveyMixin, SurveyListSerializer):
+    """Сериализатор модели опроса"""
+    questions = SurveyQuestionSerializer(many=True)
+
+    def update(self, instance, validated_data):
+        questions_data = validated_data.pop('questions')
+        self.update_questions(instance, questions_data)
+        instance = super().update(instance, validated_data)
+        return instance
+
+    class Meta:
+        model = Survey
+        fields = ['id', 'url', 'name', 'description', 'date_from', 'date_to', 'questions']

@@ -17,6 +17,7 @@ class Survey(models.Model):
         verbose_name = _('опрос')
         verbose_name_plural = _('опросы')
         unique_together = ('name', 'date_from')
+        ordering = ['date_from']
 
     def __str__(self):
         return self.name

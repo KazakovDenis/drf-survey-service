@@ -1,9 +1,6 @@
-from django.contrib import admin
-from django.urls import path
-
-from .v1 import views
+from django.urls import include, path
 
 
 urlpatterns = [
-    path('v1/', views),
+    path('v1/', include('api.v1.urls')),
 ]

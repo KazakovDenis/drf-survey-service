@@ -75,7 +75,6 @@ class Question(models.Model):
     class Meta:
         verbose_name = _('вопрос')
         verbose_name_plural = _('вопросы')
-        unique_together = ('survey', 'text')
 
     def __str__(self):
         return self.text

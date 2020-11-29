@@ -22,16 +22,25 @@ class SurveySerializerMixin:
             self.add_questions(instance, questions_data)
 
 
-class SurveyQuestionSerializer(serializers.ModelSerializer):
+class QuestionSerializer(serializers.ModelSerializer):
     """Сериализатор модели вопроса"""
     class Meta:
         model = Question
         fields = ['text', 'answer_type']
 
 
+class SchemeQuestionSerializer(serializers.ModelSerializer):
+    """Сериализатор модели связи схемы и вопроса"""
+    question = QuestionSerializer()
+
+    class Meta:
+        model = SchemeQuestion
+        fields = ['question']
+
+
 class SchemeListSerializer(serializers.HyperlinkedModelSerializer, SurveySerializerMixin):
     """Сериализатор списка моделей опроса"""
-    questions = SurveyQuestionSerializer(many=True)
+    scheme_question = SchemeQuestionSerializer(many=True)
 
     def create(self, validated_data):
         """Создать опрос"""
@@ -42,7 +51,7 @@ class SchemeListSerializer(serializers.HyperlinkedModelSerializer, SurveySeriali
 
     class Meta:
         model = Scheme
-        fields = ['id', 'url', 'name', 'description', 'date_from', 'date_to', 'questions']
+        fields = ['id', 'url', 'name', 'description', 'date_from', 'date_to', 'scheme_question']
 
 
 class SchemeSerializer(SchemeListSerializer):

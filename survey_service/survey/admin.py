@@ -1,10 +1,10 @@
 from django.contrib import admin
 
-from .models import Scheme, Question
+from .models import Scheme, SchemeQuestion
 
 
 class SurveyQuestionInline(admin.TabularInline):
-    model = Question
+    model = SchemeQuestion
     extra = 0
 
 

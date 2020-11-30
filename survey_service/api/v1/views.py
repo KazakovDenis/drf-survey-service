@@ -1,5 +1,5 @@
 from django.shortcuts import redirect
-from rest_framework import permissions, generics
+from rest_framework import permissions, generics, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
@@ -66,10 +66,16 @@ class SurveyDetailAPIView(generics.RetrieveUpdateAPIView):
     def update(self, request, *args, **kwargs):
         answers = []
         for answer_data in request.data.pop('answers'):
-            answer = Answer.objects.select_for_update().get(id=answer_data['id'])
-            # todo: choices validation
-            answer.content = answer_data['answer']
-            answers.append(answer)
+            try:
+                answer = Answer.objects.select_for_update().get(id=answer_data['id'])
+                # todo: choices validation
+                answer.content = answer_data['answer']
+                answers.append(answer)
+            except ObjectDoesNotExist:
+                return Response(
+                    data={'result': 'No such answer id: %s' % answer_data['id']},
+                    status=status.HTTP_404_NOT_FOUND
+                )
 
         Answer.objects.bulk_update(answers, fields=['content'])
         return super().update(request, *args, **kwargs)

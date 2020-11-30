@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 
 from survey.models import *
@@ -49,7 +50,7 @@ class SurveySerializer(serializers.HyperlinkedModelSerializer):
             'questions': [
                 {
                     **q,
-                    'choices': self._get_choices(q['id']),
+                    'choices': self._get_choices(scheme['id'], q['id']),
                     'answer': self._get_answer(q['id'])
                 }
                 for q in scheme['questions']
@@ -57,15 +58,21 @@ class SurveySerializer(serializers.HyperlinkedModelSerializer):
         })
         return ret
 
-    def _get_choices(self, question_id):
+    def _get_choices(self, scheme_id, question_id):
         """Получить варианты ответов"""
         return None
 
     def _get_answer(self, question_id):
         """Получить сохранённый ответ участника"""
-        question = Question.objects.get(pk=question_id)
-        AnswerQuestionSerializer(question=question)
-        return None
+        try:
+            question = Question.objects.get(pk=question_id)
+            aq = AnswerQuestion.objects.prefetch_related('answer').get(
+                question=question,
+                answer__survey_answer__survey=self.instance
+            )
+            return AnswerSerializer(aq.answer).data['content']
+        except ObjectDoesNotExist:
+            return None
 
     class Meta:
         model = Survey

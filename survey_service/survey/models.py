@@ -133,6 +133,9 @@ class Answer(models.Model):
         verbose_name = _('ответ')
         verbose_name_plural = _('ответы')
 
+    def __str__(self):
+        return self.content
+
 
 class AnswerQuestion(models.Model):
     """Связь ответов с вопросами"""

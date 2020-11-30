@@ -64,29 +64,15 @@ class SurveyDetailAPIView(generics.RetrieveUpdateAPIView):
     serializer_class = SurveySerializer
 
     def update(self, request, *args, **kwargs):
-        questions_data = request.data.pop('questions')
+        answers = []
+        for answer_data in request.data.pop('answers'):
+            answer = Answer.objects.select_for_update().get(id=answer_data['id'])
+            # todo: choices validation
+            answer.content = answer_data['answer']
+            answers.append(answer)
 
-        for questions in questions_data:
-            q = Answer.objects.select_for_update()
-
+        Answer.objects.bulk_update(answers, fields=['content'])
         return super().update(request, *args, **kwargs)
-
-# todo
-# class SurveyListAPIView(APIView):
-#     """API endpoint списка опросов для участника"""
-#
-#     def get(self, request, pk):
-#         survey = get_object_or_404(Scheme, pk=pk)
-#         serializer = SurveySerializer(survey, context={'request': request})
-#         return Response({'survey': serializer.data})
-#
-#     def post(self, request, pk):
-#         survey = get_object_or_404(Scheme, pk=pk)
-#         serializer = SurveySerializer(survey, data=request.data)
-#         if not serializer.is_valid():
-#             return Response({'serializer': serializer.data})
-#         serializer.save()
-#         return redirect('survey-list')
 
 
 class ParticipantAPIViewMixin:

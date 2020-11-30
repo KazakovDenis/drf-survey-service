@@ -84,7 +84,6 @@ class SurveyDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 
 class ParticipantAPIViewMixin:
     queryset = Participant.objects.all()
-    serializer_class = ParticipantListSerializer
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly
     ]
@@ -92,7 +91,9 @@ class ParticipantAPIViewMixin:
 
 class ParticipantListAPIView(ParticipantAPIViewMixin, generics.ListAPIView):
     """API endpoint списка участников опроса"""
+    serializer_class = ParticipantListSerializer
 
 
 class ParticipantDetailAPIView(ParticipantAPIViewMixin, generics.RetrieveUpdateAPIView):
     """API endpoint информации об участнике опроса"""
+    serializer_class = ParticipantDetailSerializer

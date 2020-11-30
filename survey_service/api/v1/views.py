@@ -48,10 +48,15 @@ class SurveyListAPIView(SurveyAPIViewMixin, generics.ListAPIView):
 
 
 @api_view(['GET'])
-def scheme_take(request, *, pk, **kwargs):
+def scheme_take(request, *, pk):
+    """Вью для создания формы опроса"""
+    participant_id = request.GET.get('participant_id')
+    if not participant_id:
+        participant = Participant.objects.get(pk=participant_id)
+    else:
+        participant = Participant.objects.create()
+
     scheme = Scheme.objects.get(pk=pk)
-    # todo: participant id
-    participant = Participant.objects.get(pk=1)
     survey = Survey.objects.create(scheme=scheme, participant=participant)
     return redirect('survey-detail', pk=survey.id)
 

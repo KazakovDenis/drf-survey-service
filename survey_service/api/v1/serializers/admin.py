@@ -8,7 +8,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     """Сериализатор модели вопроса"""
     class Meta:
         model = Question
-        fields = ['text', 'answer_type']
+        fields = ['id', 'text', 'answer_type']
 
 
 class SchemeQuestionSerializer(serializers.ModelSerializer):

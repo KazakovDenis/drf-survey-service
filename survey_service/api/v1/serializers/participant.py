@@ -38,7 +38,14 @@ class SurveySerializer(serializers.HyperlinkedModelSerializer):
             'description': scheme['description'],
             'date_from': scheme['date_from'],
             'date_to': scheme['date_to'],
-            'questions': scheme['questions'],
+            'questions': [
+                {
+                    **q,
+                    'choices': None,
+                    'answer': ''
+                }
+                for q in scheme['questions']
+            ],
         })
         return ret
 

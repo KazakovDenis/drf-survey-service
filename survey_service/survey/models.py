@@ -127,7 +127,7 @@ class SurveyQuestion(models.Model):
 class Answer(models.Model):
     """Ответ на вопрос"""
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False, db_index=True)
-    content = models.TextField(_('содержание ответа'))
+    content = models.TextField(_('содержание ответа'), blank=True)
 
     class Meta:
         verbose_name = _('ответ')

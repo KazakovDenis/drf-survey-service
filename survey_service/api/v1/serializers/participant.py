@@ -42,19 +42,24 @@ class SurveySerializer(serializers.HyperlinkedModelSerializer):
     def to_representation(self, iterable):
         ret = super().to_representation(iterable)
         scheme = ret.pop('scheme')
+
+        answers = []
+        for q in scheme['questions']:
+            answer = self._get_answer(q['id'])
+            answers.append({
+                    'id': answer['id'],
+                    'question': q['text'],
+                    'answer_type': q['answer_type'],
+                    'choices': self._get_choices(scheme['id'], q['id']),
+                    'answer': answer['content']
+            })
+
         ret.update({
             'name': scheme['name'],
             'description': scheme['description'],
             'date_from': scheme['date_from'],
             'date_to': scheme['date_to'],
-            'questions': [
-                {
-                    **q,
-                    'choices': self._get_choices(scheme['id'], q['id']),
-                    'answer': self._get_answer(q['id'])
-                }
-                for q in scheme['questions']
-            ],
+            'answers': answers,
         })
         return ret
 
@@ -64,15 +69,19 @@ class SurveySerializer(serializers.HyperlinkedModelSerializer):
 
     def _get_answer(self, question_id):
         """Получить сохранённый ответ участника"""
+        question = Question.objects.get(pk=question_id)
         try:
-            question = Question.objects.get(pk=question_id)
             aq = AnswerQuestion.objects.prefetch_related('answer').get(
                 question=question,
                 answer__survey_answer__survey=self.instance
             )
-            return AnswerSerializer(aq.answer).data['content']
+            answer = aq.answer
         except ObjectDoesNotExist:
-            return None
+            answer = Answer.objects.create()
+            AnswerQuestion.objects.create(answer=answer, question=question)
+            SurveyAnswer.objects.create(survey=self.instance, answer=answer)
+
+        return AnswerSerializer(answer).data
 
     class Meta:
         model = Survey

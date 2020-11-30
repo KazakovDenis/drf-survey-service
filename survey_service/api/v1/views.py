@@ -58,11 +58,18 @@ def scheme_take(request, *, pk):
     return redirect('survey-detail', pk=survey.id)
 
 
-class SurveyDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+class SurveyDetailAPIView(generics.RetrieveUpdateAPIView):
     """API endpoint для заполнения опроса участником"""
     queryset = Survey.objects.all()
     serializer_class = SurveySerializer
 
+    def update(self, request, *args, **kwargs):
+        questions_data = request.data.pop('questions')
+
+        for questions in questions_data:
+            q = Answer.objects.select_for_update()
+
+        return super().update(request, *args, **kwargs)
 
 # todo
 # class SurveyListAPIView(APIView):

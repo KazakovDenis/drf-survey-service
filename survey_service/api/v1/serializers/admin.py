@@ -77,24 +77,3 @@ class SchemeSerializer(serializers.HyperlinkedModelSerializer, SurveySerializerM
         ret = super().to_representation(iterable)
         ret['questions'] = ret.pop('scheme_question')
         return ret
-
-
-class SurveyListSerializer(serializers.HyperlinkedModelSerializer, SurveySerializerMixin):
-    """Сериализатор списка результатов опросов"""
-
-    def to_representation(self, iterable):
-        ret = super().to_representation(iterable)
-        ret['url'] = ret['url'] + '/take'
-        return ret
-
-    class Meta:
-        model = Scheme
-        fields = ['url', 'name', 'description', 'date_from', 'date_to']
-
-
-class SurveySerializer(SurveyListSerializer):
-    """Сериализатор модели результата опроса"""
-
-    class Meta:
-        model = Survey
-        fields = ['id', 'url', 'scheme', 'participant']

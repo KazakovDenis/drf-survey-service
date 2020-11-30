@@ -35,12 +35,9 @@ class SchemeDetailAPIView(SchemeAPIViewMixin, generics.RetrieveUpdateDestroyAPIV
     serializer_class = SchemeSerializer
 
 
-class SurveyAPIViewMixin:
-    queryset = Scheme.objects.all()
-
-
-class SurveyListAPIView(SurveyAPIViewMixin, generics.ListAPIView):
+class SurveyListAPIView(generics.ListAPIView):
     """API endpoint для просмотра списка опросов участником"""
+    queryset = Scheme.objects.all()
     serializer_class = SurveyListSerializer
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly
@@ -51,7 +48,7 @@ class SurveyListAPIView(SurveyAPIViewMixin, generics.ListAPIView):
 def scheme_take(request, *, pk):
     """Вью для создания формы опроса"""
     participant_id = request.GET.get('participant_id')
-    if not participant_id:
+    if participant_id:
         participant = Participant.objects.get(pk=participant_id)
     else:
         participant = Participant.objects.create()
@@ -61,8 +58,9 @@ def scheme_take(request, *, pk):
     return redirect('survey-detail', pk=survey.id)
 
 
-class SurveyDetailAPIView(SurveyAPIViewMixin, generics.RetrieveUpdateDestroyAPIView):
+class SurveyDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     """API endpoint для заполнения опроса участником"""
+    queryset = Survey.objects.all()
     serializer_class = SurveySerializer
 
 

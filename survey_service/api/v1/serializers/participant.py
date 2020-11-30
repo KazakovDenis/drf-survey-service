@@ -1,16 +1,24 @@
 from rest_framework import serializers
 
 from survey.models import *
-from .admin import SchemeSerializer
+from .admin import SchemeSerializer, QuestionSerializer
 
 
-class ParticipantListSerializer(serializers.HyperlinkedModelSerializer):
-    """Сериализатор списка моделей участников опроса"""
-    # todo: пройденные опросы
+class AnswerSerializer(serializers.ModelSerializer):
+    """Сериализатор моделей ответов участника"""
+    class Meta:
+        model = Answer
+        fields = ['id', 'content']
+
+
+class AnswerQuestionSerializer(serializers.ModelSerializer):
+    """Сериализатор модели связи схемы и вопроса"""
+    answer = AnswerSerializer()
+    question = QuestionSerializer()
 
     class Meta:
-        model = Participant
-        fields = ['id', 'url', 'full_name']
+        model = AnswerQuestion
+        fields = ['answer', 'question']
 
 
 class SurveyListSerializer(serializers.HyperlinkedModelSerializer):
@@ -41,14 +49,37 @@ class SurveySerializer(serializers.HyperlinkedModelSerializer):
             'questions': [
                 {
                     **q,
-                    'choices': None,
-                    'answer': ''
+                    'choices': self._get_choices(q['id']),
+                    'answer': self._get_answer(q['id'])
                 }
                 for q in scheme['questions']
             ],
         })
         return ret
 
+    def _get_choices(self, question_id):
+        """Получить варианты ответов"""
+        return None
+
+    def _get_answer(self, question_id):
+        """Получить сохранённый ответ участника"""
+        question = Question.objects.get(pk=question_id)
+        AnswerQuestionSerializer(question=question)
+        return None
+
     class Meta:
         model = Survey
         fields = ['id', 'url', 'participant', 'scheme']
+
+
+class ParticipantListSerializer(serializers.HyperlinkedModelSerializer):
+    """Сериализатор списка моделей участников опроса"""
+    results = serializers.HyperlinkedRelatedField(
+        many=True,
+        read_only=True,
+        view_name='survey-detail'
+    )
+
+    class Meta:
+        model = Participant
+        fields = ['id', 'url', 'full_name', 'results']

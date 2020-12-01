@@ -50,7 +50,7 @@ class SurveySerializer(serializers.HyperlinkedModelSerializer):
                     'id': answer['id'],
                     'question': q['text'],
                     'answer_type': q['answer_type'],
-                    'choices': self._get_choices(scheme['id'], q['id']),
+                    'answer_options': self._get_options(q['id']),
                     'answer': answer['content']
             })
 
@@ -63,9 +63,13 @@ class SurveySerializer(serializers.HyperlinkedModelSerializer):
         })
         return ret
 
-    def _get_choices(self, scheme_id, question_id):
+    def _get_options(self, question_id):
         """Получить варианты ответов"""
-        return None
+        queryset = AnswerOption.objects.prefetch_related('question').filter(
+            question__id=question_id,
+        )
+        options = [AnswerOptionSerializer(option).data for option in queryset]
+        return options
 
     def _get_answer(self, question_id):
         """Получить сохранённый ответ участника"""

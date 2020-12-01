@@ -4,7 +4,7 @@ from rest_framework import serializers
 from survey.models import *
 
 
-class AnswerOptionsSerializer(serializers.ModelSerializer):
+class AnswerOptionSerializer(serializers.ModelSerializer):
     """Сериализатор модели варианта ответа на вопрос"""
     class Meta:
         model = AnswerOption
@@ -13,7 +13,7 @@ class AnswerOptionsSerializer(serializers.ModelSerializer):
 
 class QuestionSerializer(serializers.ModelSerializer):
     """Сериализатор модели вопроса"""
-    answer_options = AnswerOptionsSerializer(many=True)
+    answer_options = AnswerOptionSerializer(many=True)
 
     class Meta:
         model = Question

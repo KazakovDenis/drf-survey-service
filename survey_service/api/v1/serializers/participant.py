@@ -28,8 +28,13 @@ def validate_answer(answer, new_content) -> Union[str, list]:
     # options validation
     if question.answer_type in ('SINGLE', 'MULTIPLE'):
         options = [opt[0] for opt in question.answer_options.all().values_list('text')]
-        if new_content not in options:
-            raise serializers.ValidationError('No such answer option')
+        if isinstance(new_content, list):
+            for option in new_content:
+                if option not in options:
+                    raise serializers.ValidationError('No such answer option')
+        else:
+            if new_content not in options:
+                raise serializers.ValidationError('No such answer option')
 
     return new_content
 

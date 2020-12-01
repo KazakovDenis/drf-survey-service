@@ -41,6 +41,7 @@ class SchemeQuestionSerializer(serializers.ModelSerializer):
         fields = ['question']
 
 
+# todo: валидация дат (date_to >= date_from)
 class SchemeSerializerMixin:
 
     question_model = Question

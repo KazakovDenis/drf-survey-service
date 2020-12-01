@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.shortcuts import redirect
 from rest_framework import permissions, generics, status
 from rest_framework.decorators import api_view
@@ -37,11 +39,13 @@ class SchemeDetailAPIView(SchemeAPIViewMixin, generics.RetrieveUpdateDestroyAPIV
 
 class SurveyListAPIView(generics.ListAPIView):
     """API endpoint для просмотра списка опросов участником"""
-    queryset = Scheme.objects.all()
     serializer_class = SurveyListSerializer
     permission_classes = [
         permissions.IsAuthenticatedOrReadOnly
     ]
+
+    def get_queryset(self):
+        return Scheme.objects.filter(date_to__gte=date.today())
 
 
 @api_view(['GET'])

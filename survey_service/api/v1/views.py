@@ -68,12 +68,11 @@ class SurveyDetailAPIView(generics.RetrieveUpdateAPIView):
         for answer_data in request.data.pop('answers'):
             try:
                 answer = Answer.objects.select_for_update().get(id=answer_data['id'])
-                # todo: choices validation
-                answer.content = answer_data['answer']
+                answer.content = validate_answer(answer, answer_data['answer'])
                 answers.append(answer)
             except ObjectDoesNotExist:
                 return Response(
-                    data={'result': 'No such answer id: %s' % answer_data['id']},
+                    data={'id': 'No such answer: %s' % answer_data['id']},
                     status=status.HTTP_404_NOT_FOUND
                 )
 

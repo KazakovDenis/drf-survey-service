@@ -6,9 +6,14 @@ from survey.models import *
 
 class AnswerOptionSerializer(serializers.ModelSerializer):
     """Сериализатор модели варианта ответа на вопрос"""
+
+    def to_representation(self, iterable):
+        ret = super().to_representation(iterable)
+        return ret['text']
+
     class Meta:
         model = AnswerOption
-        fields = ['id', 'text']
+        fields = ['text']
 
 
 class QuestionSerializer(serializers.ModelSerializer):
@@ -77,7 +82,7 @@ class SchemeSerializer(serializers.HyperlinkedModelSerializer, SurveySerializerM
     scheme_question = SchemeQuestionSerializer(many=True)
 
     def update(self, instance, validated_data):
-        questions_data = validated_data.pop('questions')
+        questions_data = validated_data.pop('questions', [])
         self.update_questions(instance, questions_data)
         instance = super().update(instance, validated_data)
         return instance

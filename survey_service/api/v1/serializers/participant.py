@@ -1,12 +1,45 @@
+from typing import Union
+
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
 
 from survey.models import *
-from .admin import SchemeSerializer, QuestionSerializer
+from .admin import SchemeSerializer, QuestionSerializer, AnswerOptionSerializer
+
+
+def validate_answer(answer, new_content) -> Union[str, list]:
+    """Валидатор ответа на вопрос
+
+    :param answer: экземпляр Answer
+    :param new_content: новое значение content
+    """
+    question = AnswerQuestion.objects.prefetch_related('question').get(
+        answer=answer
+    ).question
+
+    # type validation
+    if question.answer_type in ('TEXT', 'SINGLE'):
+        if not isinstance(new_content, str):
+            raise serializers.ValidationError('The answer must be of string type')
+    else:
+        if not isinstance(new_content, (str, list)):
+            raise serializers.ValidationError('The answer must be a one or a list of selected options')
+
+    # options validation
+    if question.answer_type in ('SINGLE', 'MULTIPLE'):
+        options = [opt[0] for opt in question.answer_options.all().values_list('text')]
+        if new_content not in options:
+            raise serializers.ValidationError('No such answer option')
+
+    return new_content
 
 
 class AnswerSerializer(serializers.ModelSerializer):
     """Сериализатор моделей ответов участника"""
+    # todo: не вызывается
+    def validate(self, attrs):
+        return attrs
+
     class Meta:
         model = Answer
         fields = ['id', 'content']

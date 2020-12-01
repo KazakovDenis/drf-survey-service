@@ -8,17 +8,15 @@
 
 ## Запуск сервиса
 * Для запуска в docker-контейнере необходимо:  
-
-    * создать образ
+    1). добавить следующие данные в переменные окружения:  
     ```
-    docker build -t surveys:1.0 . 
+    export DJANGO_SUPERUSER_EMAIL="ваш email"
+    export DJANGO_SUPERUSER_USERNAME="ваше имя пользователя"
+    export DJANGO_SUPERUSER_PASSWORD="ваш пароль" 
     ```
-    * запустить контейнер  
+    2). запустить сервис  
     ```
-    docker run -d \
-         -p 8000:8000 \
-         --name surveys \
-         surveys:1.0 \
+    docker-compose up --build
     ```
   
 ## Документация

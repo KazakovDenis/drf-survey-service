@@ -11,11 +11,17 @@ from .serializers import *
 def api_root(request, format=None):
     return Response({
         'admin': {
+            'doc': reverse('api-v1-doc', request=request, format=format),
             'schemes': reverse('scheme-list', request=request, format=format),
             'participants': reverse('participant-list', request=request, format=format),
         },
-        'participant': reverse('survey-list', request=request, format=format)
+        'participant': reverse('survey-list', request=request, format=format),
     })
+
+
+@api_view(['GET'])
+def api_spec(request, format=None):
+    return Response({'admin': 'in process'})
 
 
 class SchemeAPIViewMixin:

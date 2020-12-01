@@ -1,5 +1,3 @@
-from datetime import date
-
 from django.shortcuts import redirect
 from rest_framework import permissions, generics, status
 from rest_framework.decorators import api_view

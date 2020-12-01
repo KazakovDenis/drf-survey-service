@@ -80,6 +80,25 @@ class Question(models.Model):
         return self.text
 
 
+class AnswerOption(models.Model):
+    """Вариант ответа на вопрос"""
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False, db_index=True)
+    text = models.CharField(_('вариант ответа'), max_length=255)
+    question = models.ForeignKey(
+        Question,
+        verbose_name=_('вопрос'),
+        related_name='answer_options',
+        on_delete=models.CASCADE,
+    )
+
+    class Meta:
+        verbose_name = _('вариант ответа на вопрос')
+        verbose_name_plural = _('варианты ответов на вопросы')
+
+    def __str__(self):
+        return self.text
+
+
 class SchemeQuestion(models.Model):
     """Связь вопросов с опросами"""
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False, db_index=True)

@@ -4,11 +4,20 @@ from rest_framework import serializers
 from survey.models import *
 
 
+class AnswerOptionsSerializer(serializers.ModelSerializer):
+    """Сериализатор модели варианта ответа на вопрос"""
+    class Meta:
+        model = AnswerOption
+        fields = ['id', 'text']
+
+
 class QuestionSerializer(serializers.ModelSerializer):
     """Сериализатор модели вопроса"""
+    answer_options = AnswerOptionsSerializer(many=True)
+
     class Meta:
         model = Question
-        fields = ['id', 'text', 'answer_type']
+        fields = ['id', 'text', 'answer_type', 'answer_options']
 
 
 class SchemeQuestionSerializer(serializers.ModelSerializer):

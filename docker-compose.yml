@@ -4,6 +4,7 @@ services:
   surveys:
     environment:
       - PYTHONUNBUFFERED=1
+      - SURVEY_SECRET_KEY=${SURVEY_SECRET_KEY}
     build:
       context: .
       args:

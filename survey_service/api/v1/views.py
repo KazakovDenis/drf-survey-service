@@ -8,7 +8,8 @@ from .serializers import *
 
 
 @api_view(['GET'])
-def api_root(request, format=None):
+def api_v1_root(request, format=None):
+    """API endpoint корневой директории APIv1"""
     return Response({
         'admin': {
             'doc': reverse('api-v1-doc', request=request, format=format),
@@ -21,6 +22,7 @@ def api_root(request, format=None):
 
 @api_view(['GET'])
 def api_spec(request, format=None):
+    """API endpoint спецификации APIv1"""
     return Response({'admin': 'in process'})
 
 

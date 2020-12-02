@@ -11,7 +11,7 @@
   
     1). добавить следующие данные в переменные окружения:  
     ```
-    export SURVEY_SECRET_KEY ="ваш_секретный_ключ"
+    export SURVEY_SECRET_KEY="ваш_секретный_ключ"
     export DJANGO_SUPERUSER_EMAIL="ваш email"
     export DJANGO_SUPERUSER_USERNAME="ваше имя пользователя"
     export DJANGO_SUPERUSER_PASSWORD="ваш пароль" 

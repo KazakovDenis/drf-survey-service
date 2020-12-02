@@ -20,12 +20,6 @@ def api_v1_root(request, format=None):
     })
 
 
-@api_view(['GET'])
-def api_spec(request, format=None):
-    """API endpoint спецификации APIv1"""
-    return Response({'admin': 'in process'})
-
-
 class SchemeAPIViewMixin:
     queryset = Scheme.objects.all()
     permission_classes = [
@@ -56,7 +50,7 @@ class SurveyListAPIView(generics.ListAPIView):
 
 @api_view(['GET'])
 def scheme_take(request, *, pk):
-    """Вью для создания формы опроса"""
+    """API endpoint для создания формы опроса"""
     participant_id = request.GET.get('participant_id')
     if participant_id:
         participant = Participant.objects.get(pk=participant_id)

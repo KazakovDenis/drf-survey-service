@@ -189,9 +189,7 @@ paths:
                     format: uri
                     example: http://api.example.org/accounts/?page=2
                   results:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Scheme'
+                    $ref: '#/components/schemas/SurveyList'
           description: ''
       tags:
       - api
@@ -271,9 +269,7 @@ paths:
                     format: uri
                     example: http://api.example.org/accounts/?page=2
                   results:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Participant'
+                    $ref: '#/components/schemas/ParticipantList'
           description: ''
       tags:
       - api
@@ -373,9 +369,46 @@ components:
           type: string
           format: uuid
           readOnly: true
+        question:
+          type: string
+          readOnly: true
+        answer_type:
+          enum:
+            - TEXT
+            - SINGLE
+            - MULTIPLE
+          type: string
+          readOnly: true
+        answer_options:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnswerOption'
         content:
           type: string
           maxLength: 255
+    SurveyList:
+      type: array
+      items:
+        type: object
+        properties:
+          url:
+            type: string
+            format: url
+            readOnly: true
+          name:
+            type: string
+            readOnly: true
+          description:
+            type: string
+            readOnly: true
+          date_from:
+            type: string
+            format: date
+            readOnly: true
+          date_to:
+            type: string
+            format: date
+            readOnly: true
     Survey:
       type: object
       properties:
@@ -390,14 +423,38 @@ components:
         participant:
           type: string
           readOnly: true
-        scheme:
+        name:
           type: string
-          format: url
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        date_from:
+          type: string
+          format: date
+          readOnly: true
+        date_to:
+          type: string
+          format: date
           readOnly: true
         answers:
           type: array
           items:
             $ref: '#/components/schemas/Answer'
+    ParticipantList:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+            readOnly: true
+          url:
+            type: string
+            readOnly: true
+          full_name:
+            type: string
+            readOnly: true
     Participant:
       type: object
       properties:

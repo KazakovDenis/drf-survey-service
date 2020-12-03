@@ -86,8 +86,18 @@ class SchemeSerializerMixin:
                 for field, value in serializer.validated_data.items():
                     if field == 'id':
                         continue
-                    setattr(question, field, value)
-                    fields.append(field)
+                    elif field == 'answer_options':
+                        options_field = getattr(question, field)
+                        options = []
+                        for v in value:
+                            instance = AnswerOption(**v)
+                            instance.question = question
+                            instance.save()
+                            options.append(instance)
+                        options_field.set(options)
+                    else:
+                        setattr(question, field, value)
+                        fields.append(field)
                 to_update.append(question)
 
         if to_update:

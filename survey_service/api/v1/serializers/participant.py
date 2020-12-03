@@ -32,6 +32,8 @@ def validate_answer(answer, new_content) -> Union[str, list]:
             for option in new_content:
                 if option not in options:
                     raise serializers.ValidationError('No such answer option')
+
+            new_content = ';'.join(new_content)
         else:
             if new_content not in options:
                 raise serializers.ValidationError('No such answer option')

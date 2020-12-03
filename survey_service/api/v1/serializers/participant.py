@@ -1,3 +1,4 @@
+import json
 from typing import Union
 
 from django.core.exceptions import ObjectDoesNotExist
@@ -27,13 +28,15 @@ def validate_answer(answer, new_content) -> Union[str, list]:
 
     # options validation
     if question.answer_type in ('SINGLE', 'MULTIPLE'):
-        options = [opt[0] for opt in question.answer_options.all().values_list('text')]
+        options = [
+            opt[0] for opt in question.answer_options.all().values_list('text')
+        ]
         if isinstance(new_content, list):
             for option in new_content:
                 if option not in options:
                     raise serializers.ValidationError('No such answer option')
 
-            new_content = ';'.join(new_content)
+            new_content = json.dumps(new_content, indent=2)
         else:
             if new_content not in options:
                 raise serializers.ValidationError('No such answer option')
@@ -108,7 +111,13 @@ class SurveySerializer(serializers.HyperlinkedModelSerializer):
         queryset = AnswerOption.objects.prefetch_related('question').filter(
             question__id=question_id,
         )
-        options = [AnswerOptionSerializer(option).data for option in queryset]
+
+        options = []
+        for opt in queryset:
+            serializer = AnswerOptionSerializer(data={'text': opt.text})
+            if serializer.is_valid(raise_exception=True):
+                options.append(serializer.validated_data['text'])
+
         return options
 
     def _get_answer(self, question_id):

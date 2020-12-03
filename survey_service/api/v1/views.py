@@ -64,9 +64,6 @@ class SchemeDetailAPIView(SchemeAPIViewMixin, generics.RetrieveUpdateDestroyAPIV
 class SurveyListAPIView(generics.ListAPIView):
     """API endpoint для просмотра списка опросов участником"""
     serializer_class = SurveyListSerializer
-    permission_classes = [
-        permissions.IsAuthenticatedOrReadOnly
-    ]
 
     def get_queryset(self):
         return Scheme.objects.filter(date_to__gte=date.today())

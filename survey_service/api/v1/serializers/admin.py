@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Iterable, List
 
 from rest_framework import serializers

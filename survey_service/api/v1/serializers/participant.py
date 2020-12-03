@@ -46,10 +46,6 @@ def validate_answer(answer, new_content) -> Union[str, list]:
 
 class AnswerSerializer(serializers.ModelSerializer):
     """Сериализатор моделей ответов участника"""
-    # todo: не вызывается
-    def validate(self, attrs):
-        return attrs
-
     class Meta:
         model = Answer
         fields = ['id', 'content']

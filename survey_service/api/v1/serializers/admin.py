@@ -15,7 +15,7 @@ def validate_options(question: Question, options: list):
         if options:
             raise serializers.ValidationError('There should not be any answer options for the type "TEXT"')
     else:
-        if not isinstance(options, list) or len(options) < 2:
+        if (not isinstance(options, list)) or (len(options) < 2):
             raise serializers.ValidationError('Options should be a list of two or more values')
 
 
@@ -74,12 +74,10 @@ class SchemeSerializerMixin:
         to_create = []
         for question_data in questions_data:
             data = question_data['question']
+            options = data.pop('answer_options', [])
             question = Question(**data)
             question.save()
-
-            options = data.pop('answer_options', [])
-            if options:
-                self.add_options(question, options)
+            self.add_options(question, options)
 
             sq = SchemeQuestion(scheme=instance, question=question)
             to_create.append(sq)
@@ -95,18 +93,16 @@ class SchemeSerializerMixin:
         if current_options:
             current_options.delete()
 
-        if options:
-            validate_options(question, options)
+        validate_options(question, options)
+        to_create = []
+        for v in options:
+            instance = AnswerOption(**v)
+            instance.question = question
+            to_create.append(instance)
 
-            to_create = []
-            for v in options:
-                instance = AnswerOption(**v)
-                instance.question = question
-                to_create.append(instance)
-
-            if to_create:
-                instances = AnswerOption.objects.bulk_create(to_create)
-                options_field.set(instances)
+        if to_create:
+            instances = AnswerOption.objects.bulk_create(to_create)
+            options_field.set(instances)
 
     def delete_questions(self, questions_data: Iterable[dict]):
         """Удалить вопросы из опроса"""
@@ -132,7 +128,7 @@ class SchemeSerializerMixin:
                         fields.append(field)
                 to_update.append(question)
 
-        if to_update:
+        if to_update and fields:
             self.question_model.objects.bulk_update(to_update, fields=fields)
 
     def update_scheme_with_questions(self, instance: Scheme, questions_data: Iterable[dict]):

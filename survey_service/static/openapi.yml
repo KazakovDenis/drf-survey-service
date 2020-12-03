@@ -1,0 +1,473 @@
+openapi: 3.0.2
+info:
+  title: Survey service backend API
+  version: 'v1'
+paths:
+  /api/:
+    get:
+      operationId: getApiVersionsLists
+      description: "Список доступных версий API"
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  v1:
+                    type: string
+                    format: url
+          description: ''
+      tags:
+      - api
+  /api/v1/:
+    get:
+      operationId: getApiV1Root
+      description: "Корневая директорая APIv1"
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  admin:
+                    type: object
+                    properties:
+                      doc:
+                        type: string
+                        format: url
+                      schemes:
+                        type: string
+                        format: url
+                      participatns:
+                        type: string
+                        format: url
+                  participant:
+                    type: string
+                    format: url
+          description: ''
+      tags:
+      - api
+  /api/v1/schemes/:
+    get:
+      operationId: getSchemes
+      description: "Получить список схем"
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Scheme'
+          description: ''
+      tags:
+        - api
+    post:
+      operationId: createScheme
+      description: "Создать схему"
+      parameters: [ ]
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/Scheme'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scheme'
+          description: ''
+      tags:
+        - api
+  /api/v1/schemes/{id}:
+    get:
+      operationId: getSchemeDetails
+      description: "Получить информацию о схеме"
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: "Идентификатор схемы"
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scheme'
+          description: ''
+      tags:
+        - api
+    patch:
+      operationId: updateScheme
+      description: "Обновить схему"
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: "Идентификатор схемы"
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/Scheme'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scheme'
+          description: ''
+      tags:
+        - api
+  /api/v1/schemes/{id}/take:
+    get:
+      operationId: takeSurvey
+      description: "Пройти опрос"
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: "Идентификатор схемы"
+        schema:
+          type: string
+          format: uuid
+      - name: participant_id
+        in: query
+        required: false
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Survey'
+          description: ''
+      tags:
+      - api
+  /api/v1/surveys/:
+    get:
+      operationId: getSurveyList
+      description: "Получить список активных опросов"
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: ''
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    $ref: '#/components/schemas/SurveyList'
+          description: ''
+      tags:
+      - api
+  /api/v1/surveys/{id}:
+    get:
+      operationId: getSurveyDetails
+      description: "Получить информацию о пройденном опросе"
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: "UUID опроса"
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Survey'
+          description: ''
+      tags:
+      - api
+    patch:
+      operationId: partialUpdateSurvey
+      description: "Ответить на вопросы"
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: "Идентификатор вопроса"
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Survey'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Survey'
+          description: ''
+      tags:
+      - api
+  /api/v1/participants/:
+    get:
+      operationId: getParticipants
+      description: "Получить список участников опросов"
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    $ref: '#/components/schemas/ParticipantList'
+          description: ''
+      tags:
+      - api
+  /api/v1/participants/{id}:
+    get:
+      operationId: getParticipantDetails
+      description: "Получить информацию об участнике опросов"
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: "A unique integer value identifying this \u0443\u0447\u0430\u0441\
+          \u0442\u043D\u0438\u043A \u043E\u043F\u0440\u043E\u0441\u0430."
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Participant'
+          description: ''
+      tags:
+      - api
+components:
+  schemas:
+    AnswerOption:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        text:
+          type: string
+          maxLength: 255
+      required:
+        - text
+    Question:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        text:
+          type: string
+          maxLength: 255
+        answer_type:
+          enum:
+            - TEXT
+            - SINGLE
+            - MULTIPLE
+          type: string
+          maxLength: 127
+        answer_options:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnswerOption'
+      required:
+        - text
+        - answer_type
+    Scheme:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        url:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        date_from:
+          type: string
+          format: date
+          readOnly: true
+        date_to:
+          type: string
+          format: date
+        questions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Question'
+      required:
+        - name
+        - date_from
+        - date_to
+    Answer:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        question:
+          type: string
+          readOnly: true
+        answer_type:
+          enum:
+            - TEXT
+            - SINGLE
+            - MULTIPLE
+          type: string
+          readOnly: true
+        answer_options:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnswerOption'
+        content:
+          type: string
+          maxLength: 255
+    SurveyList:
+      type: array
+      items:
+        type: object
+        properties:
+          url:
+            type: string
+            format: url
+            readOnly: true
+          name:
+            type: string
+            readOnly: true
+          description:
+            type: string
+            readOnly: true
+          date_from:
+            type: string
+            format: date
+            readOnly: true
+          date_to:
+            type: string
+            format: date
+            readOnly: true
+    Survey:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        url:
+          type: string
+          format: url
+          readOnly: true
+        participant:
+          type: string
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        date_from:
+          type: string
+          format: date
+          readOnly: true
+        date_to:
+          type: string
+          format: date
+          readOnly: true
+        answers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Answer'
+    ParticipantList:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+            readOnly: true
+          url:
+            type: string
+            readOnly: true
+          full_name:
+            type: string
+            readOnly: true
+    Participant:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        url:
+          type: string
+          readOnly: true
+        full_name:
+          type: string
+        results:
+          type: array
+          items:
+            type: string
+            format: url

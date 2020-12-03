@@ -31,7 +31,6 @@ class AnswerOptionSerializer(serializers.ModelSerializer):
         fields = ['text']
 
 
-# todo: валидация вариантов ответов при answer_type != 'TEXT'
 class QuestionSerializer(serializers.ModelSerializer):
     """Сериализатор модели вопроса"""
     id = serializers.UUIDField(required=False)

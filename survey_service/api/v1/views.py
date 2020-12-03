@@ -33,7 +33,8 @@ class SchemeAPIViewMixin:
         for q in questions:
             options = q.get('answer_options')
             if options:
-                # todo: валидировать isinstance(options, list)
+                if not isinstance(options, list):
+                    raise serializers.ValidationError('Options should be a list')
                 q['answer_options'] = [{'text': opt} for opt in options]
 
         field = self.serializer_class.questions_field

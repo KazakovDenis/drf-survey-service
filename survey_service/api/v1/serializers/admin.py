@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Iterable, List
 
 from rest_framework import serializers
@@ -55,7 +56,6 @@ class SchemeQuestionSerializer(serializers.ModelSerializer):
         fields = ['question']
 
 
-# todo: валидация дат (date_to >= date_from)
 class SchemeSerializerMixin:
 
     question_model = Question
@@ -68,6 +68,12 @@ class SchemeSerializerMixin:
         instance = self.Meta.model.objects.create(**validated_data)
         self.add_questions(instance, questions_data)
         return instance
+
+    def validate_date_to(self, value):
+        """Валидировать дату окончания опроса"""
+        if value < self.instance.date_from:
+            raise serializers.ValidationError('The value of "date_to" should not be earlier than "date_from"')
+        return value
 
     def add_questions(self, instance: Scheme, questions_data: Iterable[dict]):
         """Добавить вопросы к опросу"""

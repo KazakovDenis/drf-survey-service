@@ -26,15 +26,32 @@ class SchemeAPIViewMixin:
         permissions.IsAdminUser
     ]
 
+    def convert_request_data(self, request):
+        """Преобразовать данные запросы в вид, пригодный для сериализации"""
+        view_field = self.serializer_class.view_field
+        questions = request.data.pop(view_field, [])
+
+        field = self.serializer_class.questions_field
+        request.data[field] = [{'question': q} for q in questions]
+        return request
+
 
 class SchemeListAPIView(SchemeAPIViewMixin, generics.ListCreateAPIView):
     """API endpoint для просмотра и редактирования списка опросов"""
     serializer_class = SchemeListSerializer
 
+    def create(self, request, *args, **kwargs):
+        request = self.convert_request_data(request)
+        return super().create(request, *args, **kwargs)
+
 
 class SchemeDetailAPIView(SchemeAPIViewMixin, generics.RetrieveUpdateDestroyAPIView):
     """API endpoint для просмотра и редактирования конкретного опроса"""
     serializer_class = SchemeSerializer
+
+    def update(self, request, *args, **kwargs):
+        request = self.convert_request_data(request)
+        return super().update(request, *args, **kwargs)
 
 
 class SurveyListAPIView(generics.ListAPIView):

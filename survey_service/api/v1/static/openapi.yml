@@ -87,7 +87,7 @@ paths:
         - api
   /api/v1/schemes/{id}:
     get:
-      operationId: getSchemeDetail
+      operationId: getSchemeDetails
       description: "Получить информацию о схеме"
       parameters:
       - name: id
@@ -195,7 +195,7 @@ paths:
       - api
   /api/v1/surveys/{id}:
     get:
-      operationId: getSurvey
+      operationId: getSurveyDetails
       description: "Получить информацию о пройденном опросе"
       parameters:
       - name: id

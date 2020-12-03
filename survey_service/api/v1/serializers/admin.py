@@ -45,10 +45,12 @@ class SchemeQuestionSerializer(serializers.ModelSerializer):
 class SchemeSerializerMixin:
 
     question_model = Question
+    questions_field = 'scheme_question'
+    view_field = 'questions'
 
     def create(self, validated_data: dict):
         """Создать опрос"""
-        questions_data = validated_data.pop('questions')
+        questions_data = validated_data.pop(self.view_field)
         instance = self.Meta.model.objects.create(**validated_data)
         self.add_questions(instance, questions_data)
         return instance
@@ -115,7 +117,7 @@ class SchemeSerializer(serializers.HyperlinkedModelSerializer, SchemeSerializerM
     scheme_question = SchemeQuestionSerializer(many=True)
 
     def update(self, instance, validated_data):
-        questions_data = validated_data.pop('questions', [])
+        questions_data = validated_data.pop(self.questions_field, [])
         if questions_data:
             self.update_scheme_with_questions(instance, questions_data)
         instance = super().update(instance, validated_data)
@@ -123,7 +125,7 @@ class SchemeSerializer(serializers.HyperlinkedModelSerializer, SchemeSerializerM
 
     def to_representation(self, iterable):
         ret = super().to_representation(iterable)
-        ret['questions'] = ret.pop('scheme_question')
+        ret[self.view_field] = ret.pop(self.questions_field)
         return ret
 
     class Meta:

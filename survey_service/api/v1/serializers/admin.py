@@ -60,14 +60,34 @@ class SchemeSerializerMixin:
         """Добавить вопросы к опросу"""
         to_create = []
         for question_data in questions_data:
-            serializer = QuestionSerializer(data=question_data['question'])
-            if serializer.is_valid(raise_exception=True):
-                question = serializer.save()
-                SchemeQuestion.objects.create(scheme=instance, question=question)
-                to_create.append(question)
+            data = question_data['question']
+            options = data.pop('answer_options', [])
+            question = Question(**data)
+            question.save()
+            self.add_options(question, options)
+            sq = SchemeQuestion(scheme=instance, question=question)
+            to_create.append(sq)
 
         if to_create:
-            self.question_model.objects.bulk_create(to_create)
+            SchemeQuestion.objects.bulk_create(to_create)
+
+    @staticmethod
+    def add_options(question: Question, options: dict):
+        """Добавить варианты ответов"""
+        options_field = getattr(question, 'answer_options')
+        current_options = options_field.all()
+        if current_options:
+            current_options.delete()
+
+        to_create = []
+        for v in options:
+            instance = AnswerOption(**v)
+            instance.question = question
+            to_create.append(instance)
+
+        if to_create:
+            instances = AnswerOption.objects.bulk_create(to_create)
+            options_field.set(instances)
 
     def delete_questions(self, questions_data: Iterable[dict]):
         """Удалить вопросы из опроса"""
@@ -87,14 +107,7 @@ class SchemeSerializerMixin:
                     if field == 'id':
                         continue
                     elif field == 'answer_options':
-                        options_field = getattr(question, field)
-                        options = []
-                        for v in value:
-                            instance = AnswerOption(**v)
-                            instance.question = question
-                            instance.save()
-                            options.append(instance)
-                        options_field.set(options)
+                        self.add_options(question, value)
                     else:
                         setattr(question, field, value)
                         fields.append(field)

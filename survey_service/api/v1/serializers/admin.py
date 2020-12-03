@@ -1,8 +1,22 @@
-from typing import Iterable
+from typing import Iterable, List
 
 from rest_framework import serializers
 
 from survey.models import *
+
+
+def validate_options(question: Question, options: list):
+    """Валидатор вариантов ответа на вопрос
+
+    :param question: экземпляр Question
+    :param options: список вариантов ответа
+    """
+    if question.answer_type == 'TEXT':
+        if options:
+            raise serializers.ValidationError('There should not be any answer options for the type "TEXT"')
+    else:
+        if not isinstance(options, list) or len(options) < 2:
+            raise serializers.ValidationError('Options should be a list of two or more values')
 
 
 class AnswerOptionSerializer(serializers.ModelSerializer):
@@ -61,10 +75,13 @@ class SchemeSerializerMixin:
         to_create = []
         for question_data in questions_data:
             data = question_data['question']
-            options = data.pop('answer_options', [])
             question = Question(**data)
             question.save()
-            self.add_options(question, options)
+
+            options = data.pop('answer_options', [])
+            if options:
+                self.add_options(question, options)
+
             sq = SchemeQuestion(scheme=instance, question=question)
             to_create.append(sq)
 
@@ -72,22 +89,25 @@ class SchemeSerializerMixin:
             SchemeQuestion.objects.bulk_create(to_create)
 
     @staticmethod
-    def add_options(question: Question, options: dict):
+    def add_options(question: Question, options: List[dict]):
         """Добавить варианты ответов"""
         options_field = getattr(question, 'answer_options')
         current_options = options_field.all()
         if current_options:
             current_options.delete()
 
-        to_create = []
-        for v in options:
-            instance = AnswerOption(**v)
-            instance.question = question
-            to_create.append(instance)
+        if options:
+            validate_options(question, options)
 
-        if to_create:
-            instances = AnswerOption.objects.bulk_create(to_create)
-            options_field.set(instances)
+            to_create = []
+            for v in options:
+                instance = AnswerOption(**v)
+                instance.question = question
+                to_create.append(instance)
+
+            if to_create:
+                instances = AnswerOption.objects.bulk_create(to_create)
+                options_field.set(instances)
 
     def delete_questions(self, questions_data: Iterable[dict]):
         """Удалить вопросы из опроса"""

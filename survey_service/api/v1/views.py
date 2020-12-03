@@ -27,12 +27,19 @@ class SchemeAPIViewMixin:
     ]
 
     def convert_request_data(self, request):
-        """Преобразовать данные запросы в вид, пригодный для сериализации"""
+        """Преобразовать данные запроса в вид, пригодный для сериализации"""
         view_field = self.serializer_class.view_field
         questions = request.data.pop(view_field, [])
+        for q in questions:
+            options = q.get('answer_options')
+            if options:
+                # todo: валидировать isinstance(options, list)
+                q['answer_options'] = [{'text': opt} for opt in options]
 
         field = self.serializer_class.questions_field
         request.data[field] = [{'question': q} for q in questions]
+        # todo: почему не пропускает без question?
+        # request.data[field] = questions
         return request
 
 

@@ -1,5 +1,4 @@
-from typing import Union, Iterable
-from uuid import UUID
+from typing import Iterable
 
 from rest_framework import serializers
 
@@ -21,7 +20,9 @@ class AnswerOptionSerializer(serializers.ModelSerializer):
 # todo: валидация вариантов ответов при answer_type != 'TEXT'
 class QuestionSerializer(serializers.ModelSerializer):
     """Сериализатор модели вопроса"""
-    answer_options = AnswerOptionSerializer(many=True)
+    id = serializers.UUIDField(required=False)
+    text = serializers.CharField(required=False, max_length=255)
+    answer_options = AnswerOptionSerializer(many=True, required=False)
 
     class Meta:
         model = Question
@@ -57,51 +58,57 @@ class SchemeSerializerMixin:
 
     def add_questions(self, instance: Scheme, questions_data: Iterable[dict]):
         """Добавить вопросы к опросу"""
-        serialized_data = []
+        to_create = []
         for question_data in questions_data:
-            serializer = QuestionSerializer(data=question_data)
+            serializer = QuestionSerializer(data=question_data['question'])
             if serializer.is_valid(raise_exception=True):
-                serialized_data.append(serializer.data)
+                question = serializer.save()
+                SchemeQuestion.objects.create(scheme=instance, question=question)
+                to_create.append(question)
 
-        self.question_model.objects.bulk_create(
-            [self.question_model(scheme=instance, **q) for q in serialized_data]
-        )
+        if to_create:
+            self.question_model.objects.bulk_create(to_create)
 
-    def delete_questions(self, questions_ids: Iterable[Union[UUID, str]]):
+    def delete_questions(self, questions_data: Iterable[dict]):
         """Удалить вопросы из опроса"""
-        if questions_ids:
+        if questions_data:
+            questions_ids = [i['question']['id'] for i in questions_data]
             self.question_model.objects.filter(id__in=questions_ids).delete()
 
     def update_questions(self, questions_data: Iterable[dict]):
         """Удалить вопросы из опроса"""
-        to_update = []
-        for question_data in questions_data:
+        to_update, fields = [], []
+        for data in questions_data:
+            question_data = data['question']
             question = self.question_model.objects.select_for_update().get(id=question_data['id'])
             serializer = QuestionSerializer(data=question_data)
             if serializer.is_valid(raise_exception=True):
-                for field, value in serializer.data:
+                for field, value in serializer.validated_data.items():
+                    if field == 'id':
+                        continue
                     setattr(question, field, value)
+                    fields.append(field)
                 to_update.append(question)
 
-        self.question_model.objects.bulk_update(
-            to_update, fields=['text', 'answer_type', 'answer_options']
-        )
+        if to_update:
+            self.question_model.objects.bulk_update(to_update, fields=fields)
 
     def update_scheme_with_questions(self, instance: Scheme, questions_data: Iterable[dict]):
         """Обновить вопросы опроса"""
-        all_data = set(questions_data)
-        new_data = set(
-            filter(lambda item: item.get('id') is None, all_data)
+        data_to_delete = filter(
+                lambda item: tuple(item['question'].keys()) == ('id',), questions_data
         )
-        self.add_questions(instance, new_data)
+        self.delete_questions(data_to_delete)
 
-        existing_data = all_data - new_data
-        data_to_delete = set(filter(
-                lambda item: tuple(item.keys()) == ('id',), existing_data
-        ))
+        def get_updating(item):
+            keys = tuple(item['question'].keys())
+            return 'id' in keys and keys != ('id',)
 
-        data_to_update = existing_data - data_to_delete
+        data_to_update = filter(get_updating, questions_data)
         self.update_questions(data_to_update)
+
+        new_data = filter(lambda item: item['question'].get('id') is None, questions_data)
+        self.add_questions(instance, new_data)
 
 
 class SchemeListSerializer(serializers.HyperlinkedModelSerializer, SchemeSerializerMixin):

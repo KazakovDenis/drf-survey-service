@@ -198,4 +198,3 @@ class SurveyAnswer(models.Model):
         verbose_name = _('связь ответов с пройденными опросами')
         verbose_name_plural = _('связи ответов с пройденными опросами')
         unique_together = ('survey', 'answer')
-

@@ -70,7 +70,8 @@ class SchemeSerializerMixin:
 
     def validate_date_to(self, value):
         """Валидировать дату окончания опроса"""
-        if value < self.instance.date_from:
+        date_from = getattr(self.instance, 'date_from', date.today())
+        if value < date_from:
             raise serializers.ValidationError('The value of "date_to" should not be earlier than "date_from"')
         return value
 

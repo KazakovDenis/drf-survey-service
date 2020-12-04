@@ -22,8 +22,8 @@ COPY survey_service .
 EXPOSE 8000
 RUN python3 manage.py makemigrations && \
     python3 manage.py migrate --noinput && \
-    python3 manage.py createsuperuser \
-        --noinput \
+    python3 manage.py collecstatic --noinput && \
+    python3 manage.py createsuperuser --noinput \
         --username $DJANGO_SUPERUSER_USERNAME \
         --email $DJANGO_SUPERUSER_EMAIL
 CMD python3 manage.py runserver 0.0.0.0:8000

@@ -12,22 +12,16 @@ from .common import *
 class SchemeTest(APITestCase):
 
     scheme = None
-    content_type = 'application/json'
-    credentials = {
-        'username': 'test_user',
-        'email': 'test@email.com',
-        'password': 'sup3rs3cr3tp@ssw0rd',
-    }
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
         user_model = get_user_model()
-        user_model.objects.create_superuser(**cls.credentials)
+        user_model.objects.create_superuser(email=EMAIL, **CREDENTIALS)
         cls.scheme = Scheme.objects.create(name=random_str())
 
     def setUp(self):
-        self.client.login(**self.credentials)
+        self.client.login(**CREDENTIALS)
 
     def test_get_scheme_list(self):
         url = reverse('scheme-list')
@@ -80,7 +74,7 @@ class SchemeTest(APITestCase):
         for case in test_data:
             with self.subTest(msg=case.name):
                 response = self.client.post(
-                    url, data=dumps(case.data), content_type=self.content_type
+                    url, data=dumps(case.data), content_type=CONTENT_TYPE
                 )
                 self.assertEqual(response.status_code, case.code)
 

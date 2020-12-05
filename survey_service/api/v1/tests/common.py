@@ -9,6 +9,12 @@ TODAY = _today.strftime('%Y-%m-%d')
 YESTERDAY = (_today - _td(days=1)).strftime('%Y-%m-%d')
 TOMORROW = (_today + _td(days=1)).strftime('%Y-%m-%d')
 
+USERNAME = 'test_user'
+EMAIL = 'test@email.com'
+PASSWORD = 'sup3rs3cr3tp@ssw0rd'
+CREDENTIALS = {'username': USERNAME, 'password': PASSWORD}
+CONTENT_TYPE = 'application/json'
+
 
 @_dataclass
 class Case:

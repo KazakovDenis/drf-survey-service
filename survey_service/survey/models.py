@@ -34,6 +34,7 @@ class Scheme(models.Model):
     name = models.CharField(_('название'), max_length=255)
     description = models.TextField(_('описание'), blank=True)
     date_from = models.DateField(_('дата начала'), default=date.today, editable=False)
+    # todo: date_to defaults to date_from
     date_to = models.DateField(_('дата окончания'), default=date.today)
 
     class Meta:

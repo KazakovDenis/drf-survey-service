@@ -30,7 +30,8 @@ class SchemeAPIViewMixin:
         """Преобразовать данные запроса в вид, пригодный для сериализации"""
         view_field = self.serializer_class.view_field
         # todo: не через _mutable
-        request.data._mutable = True
+        if not isinstance(request.data, dict):
+            request.data._mutable = True
         questions = request.data.pop(view_field, [])
         for q in questions:
             options = q.get('answer_options')

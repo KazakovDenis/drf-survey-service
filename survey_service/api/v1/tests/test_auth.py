@@ -15,22 +15,23 @@ class AuthTest(APITestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        User = get_user_model()
-        cls.user = User.objects.create_superuser(email=EMAIL, **CREDENTIALS)
+        model = get_user_model()
+        cls.user = model.objects.create_superuser(email=EMAIL, **CREDENTIALS)
 
     def tearDown(self):
+        self.client.credentials()
         self.client.logout()
 
     def test_basic_auth(self):
         url = reverse('scheme-list')
         user_pass = f'{USERNAME}:{PASSWORD}'.encode()
         encoded = b64encode(user_pass).decode()
-        auth = {'HTTP_AUTHORIZATION': f'Basic {encoded}'}
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-        response = self.client.get(url, **auth)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Basic {encoded}')
+        response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_token(self):
@@ -41,10 +42,9 @@ class AuthTest(APITestCase):
 
     def test_token_auth(self):
         url = reverse('scheme-list')
-        auth = {'HTTP_AUTHORIZATION': f'Token {self.user.auth_token}'}
-
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-        response = self.client.get(url, **auth)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Token {self.user.auth_token}')
+        response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)

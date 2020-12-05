@@ -15,7 +15,7 @@ class Case:
     name: str
     code: int
     data: dict
-    response: dict = _field(default={})
+    response: dict = _field(default=None)
 
 
 def random_str(length=10):

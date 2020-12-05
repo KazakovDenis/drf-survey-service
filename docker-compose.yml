@@ -5,12 +5,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - SURVEY_SECRET_KEY=${SURVEY_SECRET_KEY}
-    build:
-      context: .
-      args:
-        DJANGO_SUPERUSER_EMAIL: ${DJANGO_SUPERUSER_EMAIL}
-        DJANGO_SUPERUSER_USERNAME: ${DJANGO_SUPERUSER_USERNAME}
-        DJANGO_SUPERUSER_PASSWORD: ${DJANGO_SUPERUSER_PASSWORD}
+    build: .
     command: python3 manage.py runserver 0.0.0.0:8000
     ports:
       - "8000:8000"

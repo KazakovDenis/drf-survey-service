@@ -2,7 +2,7 @@
 # docker build -t surveys:1.0 .
 #
 # cmd to run:
-# docker run -d -p 8000:8000 --name surveys surveys:1.0
+# docker run -d -p 8000:8000 --name surveys --env SURVEY_SECRET_KEY=$SURVEY_SECRET_KEY surveys:1.0
 FROM python:3.8-alpine
 LABEL maintainer="https://github.com/KazakovDenis"
 

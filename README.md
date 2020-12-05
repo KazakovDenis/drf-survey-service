@@ -15,7 +15,7 @@
     ```
     2). запустить сервис  
     ```
-    docker-compose up --build
+    docker-compose up -d --build
     ```
     3). создать администратора  
     ```

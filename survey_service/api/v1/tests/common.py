@@ -3,6 +3,8 @@ from datetime import date as _date, timedelta as _td
 from random import sample as _sample
 from string import printable as _printable
 
+from rest_framework.reverse import reverse as _reverse
+
 
 _today = _date.today()
 TODAY = _today.strftime('%Y-%m-%d')
@@ -14,6 +16,20 @@ EMAIL = 'test@email.com'
 PASSWORD = 'sup3rs3cr3tp@ssw0rd'
 CREDENTIALS = {'username': USERNAME, 'password': PASSWORD}
 CONTENT_TYPE = 'application/json'
+
+
+class URL:
+    GET_TOKEN = _reverse('get-token')
+    VERSIONS = _reverse('api-versions-list')
+    # V1_ROOT = resolve('/api/v1/')
+    V1_DOC = _reverse('api-v1-doc')
+    SCHEMES = _reverse('scheme-list')
+    scheme = lambda uuid: _reverse('scheme-detail', kwargs={'pk': uuid})
+    take_survey = lambda uuid: _reverse('scheme-take', kwargs={'pk': uuid})
+    PARTICIPANTS = _reverse('participant-list')
+    participant = lambda p_id: _reverse('participant-detail', kwargs={'pk': p_id})
+    SURVEYS = _reverse('survey-list')
+    survey = lambda p_id: _reverse('survey-detail', kwargs={'pk': p_id})
 
 
 @_dataclass

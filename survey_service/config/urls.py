@@ -21,6 +21,6 @@ from django.views.static import serve
 
 urlpatterns = [
     path('', admin.site.urls),
-    path('api/', include('api.urls')),
+    path('api/', include('api.urls'), name='api'),
     re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
 ]

@@ -2,7 +2,6 @@ from json import dumps
 
 from django.contrib.auth import get_user_model
 from rest_framework import status
-from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 
 from survey.models import Scheme
@@ -10,6 +9,7 @@ from .common import *
 
 
 class SchemeTest(APITestCase):
+    """Проверка работы со схемами"""
 
     scheme = None
 
@@ -24,8 +24,8 @@ class SchemeTest(APITestCase):
         self.client.login(**CREDENTIALS)
 
     def test_get_scheme_list(self):
-        url = reverse('scheme-list')
-        response = self.client.get(url)
+        """Проверка получения списка схем"""
+        response = self.client.get(URL.SCHEMES)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         schemes = response.data.get('results', [])
@@ -36,13 +36,14 @@ class SchemeTest(APITestCase):
         self.assertEqual(len(scheme_ids), 1)
 
     def test_get_scheme(self):
-        url = reverse('scheme-detail', kwargs={'pk': self.scheme.id})
+        """Проверка получения информации о схеме"""
+        url = URL.scheme(self.scheme.id)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data.get('name'), self.scheme.name)
 
     def test_create_scheme(self):
-        url = reverse('scheme-list')
+        """Проверка создания схемы"""
         non_unique = random_str()
 
         test_data = [
@@ -74,17 +75,19 @@ class SchemeTest(APITestCase):
         for case in test_data:
             with self.subTest(msg=case.name):
                 response = self.client.post(
-                    url, data=dumps(case.data), content_type=CONTENT_TYPE
+                    URL.SCHEMES, data=dumps(case.data), content_type=CONTENT_TYPE
                 )
                 self.assertEqual(response.status_code, case.code)
 
     # todo
     def t_edit_scheme(self):
+        """Проверка изменения схемы"""
         # todo: add, edit, delete questions
         pass
 
     def test_delete_scheme(self):
+        """Проверка удаления схемы"""
         scheme = Scheme.objects.create(name=random_str())
-        url = reverse('scheme-detail', kwargs={'pk': scheme.id})
+        url = URL.scheme(scheme.id)
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)

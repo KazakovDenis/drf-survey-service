@@ -19,7 +19,7 @@
     ```
     3). создать администратора  
     ```
-    docker-compose run surveys python3 manage.py createsuperuser
+    docker-compose exec surveys python3 manage.py createsuperuser
     ```
     4). проверить работу сервиса: http://localhost:8000/
   

@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from survey.models import Scheme
+from survey import models
 from .common import *
 
 
@@ -18,7 +18,7 @@ class SchemeTest(APITestCase):
         super().setUpClass()
         user_model = get_user_model()
         user_model.objects.create_superuser(email=EMAIL, **CREDENTIALS)
-        cls.scheme = Scheme.objects.create(name=random_str())
+        cls.scheme = models.Scheme.objects.create(name=random_str())
 
     def setUp(self):
         self.client.login(**CREDENTIALS)
@@ -54,10 +54,7 @@ class SchemeTest(APITestCase):
                 'Full survey info', 201,
                 {'name': random_str(), 'date_from': TODAY, 'date_to': TOMORROW, 'description': random_str()},
             ),
-            Case(
-                'With question', 201,
-                {'name': random_str(), 'questions': [{'text': random_str()}]},
-            ),
+            Case('With question', 201, {'name': random_str(), 'questions': [{'text': random_str()}]}),
 
             # negative
             Case('Name exists at this day', 400, {'name': non_unique}),
@@ -65,11 +62,36 @@ class SchemeTest(APITestCase):
             # todo:
             # Case(
             #     'No answer options', 400,
-            #     {
-            #         'name': random_str(),
-            #         'questions': [{'text': random_str(), 'answer_type': 'SINGLE'}]
-            #     }
+            #     {'name': random_str(), 'questions': [{'text': random_str(), 'answer_type': 'SINGLE'}]}
             # ),
+            Case(
+                'Wrong answer type', 400,
+                {'name': random_str(), 'questions': [{'text': random_str(), 'answer_type': 'Wrong type'}]}
+            ),
+            Case(
+                'No answer options', 400,
+                {'name': random_str(), 'questions': [{'text': random_str(), 'answer_type': 'MULTIPLE'}]}
+            ),
+            Case(
+                'Wrong answer options type', 400,
+                {'name': random_str(), 'questions': [{'text': random_str(), 'answer_options': 'Answer1'}]}
+            ),
+            Case(
+                'Not enough answer options', 400,
+                {'name': random_str(), 'questions': [{'text': random_str(), 'answer_options': ['Answer1']}]}
+            ),
+            Case(
+                'Answer options with the wrong type', 400,
+                {
+                    'name': random_str(),
+                    'questions': [{'text': random_str(), 'answer_type': 'TEXT', 'answer_options': ['Answer1']}]
+                }
+            ),
+            Case(
+                'Same answer options', 400,
+                {'name': random_str(), 'questions': [{'text': random_str(), 'answer_options': ['Answer1', 'Answer1']}]}
+            ),
+
         ]
 
         for case in test_data:
@@ -79,15 +101,71 @@ class SchemeTest(APITestCase):
                 )
                 self.assertEqual(response.status_code, case.code)
 
-    # todo
-    def t_edit_scheme(self):
+    def test_edit_scheme(self):
         """Проверка изменения схемы"""
-        # todo: add, edit, delete questions
-        pass
+        scheme_id = self.scheme.id
+        url = URL.scheme(scheme_id)
+
+        test_data = [
+            # positive
+            Case('Full survey info', 201, {'name': random_str(), 'date_to': TOMORROW, 'description': random_str()}),
+            Case('Add question', 201, {'id': scheme_id, 'questions': [{'text': random_str()}]}),
+
+            # negative
+            Case('Change date_from', 400, {'id': scheme_id, 'date_from': TODAY}),
+        ]
+        for case in test_data:
+            with self.subTest(msg=case.name):
+                response = self.client.put(
+                    url, data=dumps(case.data), content_type=CONTENT_TYPE
+                )
+                self.assertEqual(response.status_code, case.code)
+
+    def test_edit_delete_question(self):
+        """Проверка редактирования и удаления вопроса из опроса"""
+        scheme = models.Scheme.objects.create(name=random_str())
+        question = models.Question.objects.create(text=random_str(), answer_type='SINGLE')
+        models.SchemeQuestion.objects.create(scheme=scheme, question=question)
+        url = URL.scheme(scheme.id)
+
+        test_data = [
+            # negative
+            Case('Wrong answer type', 400, {'questions': [{'id': question.id, 'answer_type': 'Wrong type'}]}),
+            Case('No answer options', 400, {'questions': [{'id': question.id, 'answer_type': 'MULTIPLE'}]}),
+            Case('Wrong answer options type', 400, {'questions': [{'id': question.id, 'answer_options': 'Answer1'}]}),
+            Case('Not enough answer options', 400, {'questions': [{'id': question.id, 'answer_options': ['Answer1']}]}),
+            Case(
+                'Answer options with the wrong type', 400,
+                {'questions': [{'id': question.id, 'answer_type': 'TEXT', 'answer_options': ['Answer1']}]}
+            ),
+            Case(
+                'Same answer options', 400,
+                {'questions': [{'id': question.id, 'answer_options': ['Answer1', 'Answer1']}]}
+            ),
+
+            # positive
+            Case(
+                'Edit question', 200,
+                {'questions': [{'id': question.id, 'text': random_str()}]}
+            ),
+            Case(
+                'Edit question with options', 200,
+                {'questions': [
+                    {'id': question.id, 'answer_type': 'MULTIPLE', 'answer_options': ['Answer1', 'Answer2']}
+                ]}
+            ),
+            Case('Delete question', 200, {'questions': [{'id': question.id}]}),
+        ]
+        for case in test_data:
+            with self.subTest(msg=case.name):
+                response = self.client.put(
+                    url, data=dumps(case.data), content_type=CONTENT_TYPE
+                )
+                self.assertEqual(response.status_code, case.code)
 
     def test_delete_scheme(self):
         """Проверка удаления схемы"""
-        scheme = Scheme.objects.create(name=random_str())
+        scheme = models.Scheme.objects.create(name=random_str())
         url = URL.scheme(scheme.id)
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)

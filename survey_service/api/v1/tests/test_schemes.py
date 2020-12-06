@@ -103,7 +103,7 @@ class SchemeTest(APITestCase):
 
     def test_edit_scheme(self):
         """Проверка изменения схемы"""
-        scheme_id = self.scheme.id
+        scheme_id = str(self.scheme.id)
         url = URL.scheme(scheme_id)
 
         test_data = [
@@ -127,34 +127,35 @@ class SchemeTest(APITestCase):
         question = models.Question.objects.create(text=random_str(), answer_type='SINGLE')
         models.SchemeQuestion.objects.create(scheme=scheme, question=question)
         url = URL.scheme(scheme.id)
+        qid = str(question.id)
 
         test_data = [
             # negative
-            Case('Wrong answer type', 400, {'questions': [{'id': question.id, 'answer_type': 'Wrong type'}]}),
-            Case('No answer options', 400, {'questions': [{'id': question.id, 'answer_type': 'MULTIPLE'}]}),
-            Case('Wrong answer options type', 400, {'questions': [{'id': question.id, 'answer_options': 'Answer1'}]}),
-            Case('Not enough answer options', 400, {'questions': [{'id': question.id, 'answer_options': ['Answer1']}]}),
+            Case('Wrong answer type', 400, {'questions': [{'id': qid, 'answer_type': 'Wrong type'}]}),
+            Case('No answer options', 400, {'questions': [{'id': qid, 'answer_type': 'MULTIPLE'}]}),
+            Case('Wrong answer options type', 400, {'questions': [{'id': qid, 'answer_options': 'Answer1'}]}),
+            Case('Not enough answer options', 400, {'questions': [{'id': qid, 'answer_options': ['Answer1']}]}),
             Case(
                 'Answer options with the wrong type', 400,
-                {'questions': [{'id': question.id, 'answer_type': 'TEXT', 'answer_options': ['Answer1']}]}
+                {'questions': [{'id': qid, 'answer_type': 'TEXT', 'answer_options': ['Answer1']}]}
             ),
             Case(
                 'Same answer options', 400,
-                {'questions': [{'id': question.id, 'answer_options': ['Answer1', 'Answer1']}]}
+                {'questions': [{'id': qid, 'answer_options': ['Answer1', 'Answer1']}]}
             ),
 
             # positive
             Case(
                 'Edit question', 200,
-                {'questions': [{'id': question.id, 'text': random_str()}]}
+                {'questions': [{'id': qid, 'text': random_str()}]}
             ),
             Case(
                 'Edit question with options', 200,
                 {'questions': [
-                    {'id': question.id, 'answer_type': 'MULTIPLE', 'answer_options': ['Answer1', 'Answer2']}
+                    {'id': qid, 'answer_type': 'MULTIPLE', 'answer_options': ['Answer1', 'Answer2']}
                 ]}
             ),
-            Case('Delete question', 200, {'questions': [{'id': question.id}]}),
+            Case('Delete question', 200, {'questions': [{'id': qid}]}),
         ]
         for case in test_data:
             with self.subTest(msg=case.name):

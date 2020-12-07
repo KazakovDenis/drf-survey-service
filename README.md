@@ -1,6 +1,6 @@
 # API бекенда для сервиса опросов
 ![Python version](https://img.shields.io/badge/python-3.7%2B-blue)
-[![Build Status](https://travis-ci.com/KazakovDenis/fabrique_studio.svg?branch=master)](https://travis-ci.com/KazakovDenis/fabrique_studio)
+[![Build Status](https://travis-ci.com/KazakovDenis/fabrique_studio.svg?branch=main)](https://travis-ci.com/KazakovDenis/fabrique_studio)
 
 [Техническое задание](https://github.com/KazakovDenis/fabrique_studio/blob/main/task.txt)  
 

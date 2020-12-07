@@ -1,7 +1,7 @@
 from dataclasses import dataclass as _dataclass, field as _field
 from datetime import date as _date, timedelta as _td
 from random import sample as _sample
-from string import printable as _printable
+from string import ascii_letters as _ascii_letters
 from typing import Any
 
 from rest_framework.reverse import reverse as _reverse
@@ -42,4 +42,4 @@ class Case:
 
 
 def random_str(length=10):
-    return ''.join(_sample(_printable, length))
+    return ''.join(_sample(_ascii_letters, length))

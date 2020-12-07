@@ -23,6 +23,7 @@ class Participant(models.Model):
     class Meta:
         verbose_name = _('участник опроса')
         verbose_name_plural = _('участники опроса')
+        ordering = ['id']
 
     def __str__(self):
         return f'Участник №{self.id}'

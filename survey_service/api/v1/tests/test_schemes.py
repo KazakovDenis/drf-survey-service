@@ -57,3 +57,18 @@ class SurveyTest(APITestCase):
         response = self.client.get(url, follow=True)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['participant'], participant_url)
+
+    def test_send_answers(self):
+        """Проверка возможности отправки ответов"""
+        # todo: positive + negative cases
+        url = URL.survey(self.survey.id)
+        response = self.client.get(url)
+        answer_id = response.data['answers'][0]['id']
+
+        answer = random_str()
+        data = {'answers': [{'id': answer_id, 'answer': answer}]}
+        response = self.client.patch(url, data=dumps(data), content_type=CONTENT_TYPE)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        resp_answer = response.data['answers'][0]['answer']
+        self.assertEqual(resp_answer, answer)

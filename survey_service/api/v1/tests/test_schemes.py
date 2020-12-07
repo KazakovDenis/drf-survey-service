@@ -99,7 +99,7 @@ class SchemeTest(APITestCase):
                 )
                 self.assertEqual(response.status_code, case.code)
 
-    def test_edit_scheme(self):
+    def test_edit_scheme_info(self):
         """Проверка изменения схемы"""
         scheme_id = str(self.scheme.id)
         url = URL.scheme(scheme_id)
@@ -107,21 +107,23 @@ class SchemeTest(APITestCase):
         test_data = [
             # positive
             Case('Full survey info', 200, {'name': random_str(), 'date_to': TOMORROW, 'description': random_str()}),
-            # todo: возвращает 400
-            # Case('Add question', 201, {'questions': [{'text': random_str()}]}),
+            Case('Add question', 200, {'questions': [{'text': random_str()}]}),
 
             # negative
-            Case('Change date_from', 400, {'date_from': TODAY}),
+            Case('Change date_from', 200, {'date_from': YESTERDAY}, response=YESTERDAY),
         ]
         for case in test_data:
             with self.subTest(msg=case.name):
-                response = self.client.put(
+                response = self.client.patch(
                     url, data=dumps(case.data), content_type=CONTENT_TYPE
                 )
                 self.assertEqual(response.status_code, case.code)
+                if case.response:
+                    resp_date = response.data.get('date_from')
+                    self.assertNotEqual(resp_date, case.response)
 
     def test_edit_delete_question(self):
-        """Проверка редактирования и удаления вопроса из опроса"""
+        """Проверка редактирования и удаления вопроса из схемы"""
         scheme = models.Scheme.objects.create(name=random_str())
         question = models.Question.objects.create(text=random_str(), answer_type='SINGLE')
         models.SchemeQuestion.objects.create(scheme=scheme, question=question)

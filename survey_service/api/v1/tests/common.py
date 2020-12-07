@@ -2,6 +2,7 @@ from dataclasses import dataclass as _dataclass, field as _field
 from datetime import date as _date, timedelta as _td
 from random import sample as _sample
 from string import printable as _printable
+from typing import Any
 
 from rest_framework.reverse import reverse as _reverse
 
@@ -37,7 +38,7 @@ class Case:
     name: str
     code: int
     data: dict
-    response: dict = _field(default=None)
+    response: Any = _field(default=None)
 
 
 def random_str(length=10):

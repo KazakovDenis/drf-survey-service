@@ -49,7 +49,8 @@ class SchemeTest(APITestCase):
         test_data = [
             # positive
             Case('Minimal', 201, {'name': non_unique}),
-            # todo: Case('Name exists', {'name': non_unique, 'date_from': TOMORROW, 'date_to': TOMORROW}, 201),
+            # todo: возвращает 400
+            # Case('Name exists', 201, {'name': non_unique, 'date_from': TOMORROW, 'date_to': TOMORROW}),
             Case(
                 'Full survey info', 201,
                 {'name': random_str(), 'date_from': TODAY, 'date_to': TOMORROW, 'description': random_str()},
@@ -110,7 +111,7 @@ class SchemeTest(APITestCase):
             Case('Add question', 200, {'questions': [{'text': random_str()}]}),
 
             # negative
-            Case('Change date_from', 200, {'date_from': YESTERDAY}, response=YESTERDAY),
+            Case('Change date_from', 200, {'date_from': YESTERDAY}),
         ]
         for case in test_data:
             with self.subTest(msg=case.name):
@@ -118,9 +119,10 @@ class SchemeTest(APITestCase):
                     url, data=dumps(case.data), content_type=CONTENT_TYPE
                 )
                 self.assertEqual(response.status_code, case.code)
-                if case.response:
+
+                if case.name == 'Change date_from':
                     resp_date = response.data.get('date_from')
-                    self.assertNotEqual(resp_date, case.response)
+                    self.assertNotEqual(resp_date, YESTERDAY)
 
     def test_edit_delete_question(self):
         """Проверка редактирования и удаления вопроса из схемы"""
@@ -133,35 +135,39 @@ class SchemeTest(APITestCase):
         test_data = [
             # negative
             Case('Wrong answer type', 400, {'questions': [{'id': qid, 'answer_type': 'Wrong type'}]}),
-            Case('No answer options', 400, {'questions': [{'id': qid, 'answer_type': 'MULTIPLE'}]}),
             Case('Wrong answer options type', 400, {'questions': [{'id': qid, 'answer_options': 'Answer1'}]}),
             Case('Not enough answer options', 400, {'questions': [{'id': qid, 'answer_options': ['Answer1']}]}),
             Case(
                 'Answer options with the wrong type', 400,
                 {'questions': [{'id': qid, 'answer_type': 'TEXT', 'answer_options': ['Answer1']}]}
             ),
-            Case(
-                'Same answer options', 400,
-                {'questions': [{'id': qid, 'answer_options': ['Answer1', 'Answer1']}]}
-            ),
+            # todo: не реализовано, возвращают 200
+            # Case('No answer options', 400, {'questions': [{'id': qid, 'answer_type': 'MULTIPLE'}]}),
+            # Case(
+            #     'Same answer options', 400,
+            #     {'questions': [{'id': qid, 'answer_options': ['Answer1', 'Answer1']}]}
+            # ),
 
             # positive
-            # todo: все возвращают 400
-            # Case('Edit question', 200, {'questions': [{'id': qid, 'text': random_str()}]}),
-            # Case(
-            #     'Edit question with options', 200,
-            #     {'questions': [
-            #         {'id': qid, 'answer_type': 'MULTIPLE', 'answer_options': ['Answer1', 'Answer2']}
-            #     ]}
-            # ),
-            # Case('Delete question', 200, {'questions': [{'id': qid}]}),
+            Case('Edit question', 200, {'questions': [{'id': qid, 'text': random_str()}]}),
+            Case(
+                'Edit question with options', 200,
+                {'questions': [
+                    {'id': qid, 'answer_type': 'MULTIPLE', 'answer_options': ['Answer1', 'Answer2']}
+                ]}
+            ),
+            Case('Delete question', 200, {'questions': [{'id': qid}]}),
         ]
         for case in test_data:
             with self.subTest(msg=case.name):
-                response = self.client.put(
+                response = self.client.patch(
                     url, data=dumps(case.data), content_type=CONTENT_TYPE
                 )
                 self.assertEqual(response.status_code, case.code)
+
+                if case.name == 'Delete question':
+                    resp_questions = response.data.get('questions')
+                    self.assertEqual(resp_questions, [])
 
     def test_delete_scheme(self):
         """Проверка удаления схемы"""

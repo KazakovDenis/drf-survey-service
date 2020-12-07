@@ -4,6 +4,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
+from .generics import GetPatchAPIView
 from .serializers import *
 
 
@@ -18,6 +19,26 @@ def api_v1_root(request, format=None):
         },
         'participant': reverse('survey-list', request=request, format=format),
     })
+
+
+class ParticipantAPIViewMixin:
+    queryset = Participant.objects.all()
+
+
+class ParticipantListAPIView(ParticipantAPIViewMixin, generics.ListAPIView):
+    """API endpoint списка участников опроса"""
+    serializer_class = ParticipantListSerializer
+    permission_classes = [
+        permissions.IsAdminUser
+    ]
+
+
+class ParticipantDetailAPIView(ParticipantAPIViewMixin, GetPatchAPIView):
+    """API endpoint информации об участнике опроса"""
+    serializer_class = ParticipantDetailSerializer
+    permission_classes = [
+        permissions.IsAuthenticatedOrReadOnly
+    ]
 
 
 class SchemeAPIViewMixin:
@@ -87,7 +108,7 @@ def scheme_take(request, *, pk):
     return redirect('survey-detail', pk=survey.id)
 
 
-class SurveyDetailAPIView(generics.RetrieveUpdateAPIView):
+class SurveyDetailAPIView(GetPatchAPIView):
     """API endpoint для заполнения опроса участником"""
     queryset = Survey.objects.all()
     serializer_class = SurveySerializer
@@ -107,23 +128,3 @@ class SurveyDetailAPIView(generics.RetrieveUpdateAPIView):
 
         Answer.objects.bulk_update(answers, fields=['content'])
         return super().update(request, *args, **kwargs)
-
-
-class ParticipantAPIViewMixin:
-    queryset = Participant.objects.all()
-
-
-class ParticipantListAPIView(ParticipantAPIViewMixin, generics.ListAPIView):
-    """API endpoint списка участников опроса"""
-    serializer_class = ParticipantListSerializer
-    permission_classes = [
-        permissions.IsAdminUser
-    ]
-
-
-class ParticipantDetailAPIView(ParticipantAPIViewMixin, generics.RetrieveUpdateAPIView):
-    """API endpoint информации об участнике опроса"""
-    serializer_class = ParticipantDetailSerializer
-    permission_classes = [
-        permissions.IsAuthenticatedOrReadOnly
-    ]
